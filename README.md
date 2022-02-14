@@ -2,6 +2,10 @@
 
 A template project for showing the company CI/CD strategy
 
+# Run Local
+1. Open with Visual Studio
+2. Run docker/docker-compose
+
 # Test Api
 ```
 & docker build --no-cache -t calc/arithmetics.api:local -f src/Calculator.Services.ArithmeticOperations/Dockerfile src/
