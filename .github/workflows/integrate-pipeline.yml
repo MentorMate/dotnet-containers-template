@@ -121,15 +121,22 @@ jobs:
         with:
           java-version: 1.11
       - name: Download api test results
+        id: download-api-tests
         uses: actions/download-artifact@v2
         with:
           name: dotnet-test-results
           path: TestResults
       - name: Download web test results
+        id: download-web-tests
         uses: actions/download-artifact@v2
         with:
           name: web-test-results
           path: TestResults
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: TestResults
+      - name: 'Echo download path'
+        run: echo ${{steps.download-web-tests.outputs.download-path}}
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -168,10 +175,10 @@ jobs:
            /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url=https://sonarcloud.io \
            /d:sonar.exclusions="**/node_modules/**/*,**/*.ttf,**/*.woff2,**/Scripts/**/*,**/bootstrap*.css" \
            /d:sonar.test.inclusions="src/Calculator.Services.ArithmeticOperations.Tests/**/*,**/*.test.ts,**/calculator-e2e/**/*" \
-           /d:sonar.cs.opencover.reportsPaths="${{ github.workspace }}/TestResults/coverage.opencover.xml" \
-           /d:sonar.cs.vstest.reportsPaths="${{ github.workspace }}/TestResults/arithmetic-operations.unit-tests.trx" \
-           /d:sonar.testExecutionReportPaths="${{ github.workspace }}/TestResults/test-report.xml" \
-           /d:sonar.javascript.lcov.reportPaths="${{ github.workspace }}/TestResults/lcov.info"
+           /d:sonar.cs.opencover.reportsPaths="${{steps.download-api-tests.outputs.download-path}}/coverage.opencover.xml" \
+           /d:sonar.cs.vstest.reportsPaths="${{steps.download-api-tests.outputs.download-path}}/arithmetic-operations.unit-tests.trx" \
+           /d:sonar.testExecutionReportPaths="${{steps.download-web-tests.outputs.download-path}}/test-report.xml" \
+           /d:sonar.javascript.lcov.reportPaths="${{steps.download-web-tests.outputs.download-path}}/lcov.info"
           dotnet build
           ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
   doc-fx:
