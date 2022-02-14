@@ -1,4 +1,4 @@
-namespace Arithmetic.Operations;
+﻿namespace Arithmetic.Operations;
 
 #pragma warning disable MEN008, SA1313
 
