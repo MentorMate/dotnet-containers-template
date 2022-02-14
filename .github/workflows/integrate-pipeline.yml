@@ -160,14 +160,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: >
-          ./.sonar/scanner/dotnet-sonarscanner begin /k:"MentorMate_dotnet-containers-template" /o:mentormate
-           /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url=https://sonarcloud.io
-           /d:sonar.exclusions="**/node_modules/**/*,**/*.ttf,**/*.woff2,**/Scripts/**/*,**/bootstrap*.css"
-           /d:sonar.test.inclusions="src/Calculator.Services.ArithmeticOperations.Tests/**/*,**/*.test.ts,**/calculator-e2e/**/*"
-           /d:sonar.cs.opencover.reportsPaths="TestResults\coverage.opencover.xml"
-           /d:sonar.cs.vstest.reportsPaths="TestResults\arithmetic-operations.unit-tests.trx"
-           /d:sonar.testExecutionReportPaths="TestResults\test-report.xml"
+        run: |
+          ./.sonar/scanner/dotnet-sonarscanner begin /k:"MentorMate_dotnet-containers-template" /o:mentormate \
+           /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url=https://sonarcloud.io \
+           /d:sonar.exclusions="**/node_modules/**/*,**/*.ttf,**/*.woff2,**/Scripts/**/*,**/bootstrap*.css" \
+           /d:sonar.test.inclusions="src/Calculator.Services.ArithmeticOperations.Tests/**/*,**/*.test.ts,**/calculator-e2e/**/*" \
+           /d:sonar.cs.opencover.reportsPaths="TestResults\coverage.opencover.xml" \
+           /d:sonar.cs.vstest.reportsPaths="TestResults\arithmetic-operations.unit-tests.trx" \
+           /d:sonar.testExecutionReportPaths="TestResults\test-report.xml" \
            /d:sonar.javascript.lcov.reportPaths="TestResults\lcov.info"
       - name: build dotnet
         run: dotnet build
