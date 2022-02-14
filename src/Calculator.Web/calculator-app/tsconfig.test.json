@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "esModuleInterop": true,
+    "isolatedModules": false
+  },
+  "files": [ "jest-setup.ts" ],
+  "include": [ "**/*.test.ts", "**/*.d.ts" ]
+}

@@ -1,0 +1,20 @@
+{
+  "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.type": "newLineEachExpressionAfterCountLimitExceptIfOnlyOne",
+  "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 140,
+  "importSorter.sortConfiguration.removeUnusedImports": true,
+  "importSorter.sortConfiguration.customOrderingRules.defaultOrderLevel": 60,
+  "html.format.wrapLineLength": 140,
+  "html.format.wrapAttributes": "preserve-aligned",
+  "typescript.preferences.quoteStyle": "single",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[html]": {
+    "editor.linkedEditing": true,
+    "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "editor.formatOnSave": true,
+  "html.autoClosingTags": true,
+  "files.exclude": {
+    "**/obj/": true,
+    "**/bin/": true
+  }
+}

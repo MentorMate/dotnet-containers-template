@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup Label="Globals">
+    <Version>1.0.0</Version>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <CrossGenDuringPublish>false</CrossGenDuringPublish>
+    <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
+    <UserSecretsId>8a45977b-a0b6-4ea3-8219-5bc83e791dbe</UserSecretsId>
+    <RootNamespace>Arithmetic.Operations</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Label="Code Analysis">
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)'=='Debug'">..\.config\analizers.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)'=='Release'">..\.config\analizers.disable.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup Label="NuGet Packages">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+  </ItemGroup>
+  <ItemGroup Label="Projects and Files Reference">
+    <AdditionalFiles Include="..\.config\stylecop.json" />
+  </ItemGroup>
+  <ItemGroup Label="Code Analyzers">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.*" PrivateAssets="All" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.33.0.*" PrivateAssets="All" />
+    <PackageReference Include="CodeCracker.CSharp" Version="1.1.*" PrivateAssets="All" />
+    <PackageReference Include="RefactoringEssentials" Version="5.6.*" PrivateAssets="All" />
+    <PackageReference Include="Menees.Analyzers" Version="3.0.*" PrivateAssets="All" />
+  </ItemGroup>
+</Project>

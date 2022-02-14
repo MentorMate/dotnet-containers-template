@@ -1,0 +1,57 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "language": "en-US",
+  "overrides": [
+    {
+      "filename": "{*.csproj,*.dcproj,*.sln}",
+      "words": [
+        "dcproj",
+        "msbuild",
+        "Usings",
+        "analizers",
+        "ruleset",
+        "stylecop",
+        "Menees",
+        "Swashbuckle"
+      ]
+    },
+    {
+      "filename": "{.cspell.json,*.svg}",
+      "enabled": false
+    },
+    {
+      "filename": "*.md",
+      "words": []
+    },
+    {
+      "filename": "Dockerfile",
+      "words": [
+        "WORKDIR",
+        "aspnet"
+      ]
+    }
+  ],
+  "ignorePaths": [
+    ".gitattributes",
+    ".gitignore",
+    ".editorconfig",
+    "cspell.json",
+    "**/.gitignore",
+    "*.{png,jpg,pdf,mp4}",
+    "**/*.ruleset",
+    "**/bin/**",
+    "**/obj/**",
+    "**/node_modules/**",
+    "**/TestResults/**",
+    "**/tsconfig.json",
+    "**/launchSettings.json",
+    "**/docker-compose.yml",
+    "**/docker-compose.override.yml"
+  ],
+  "words": [
+    "dapr",
+    "cobertura",
+    "browserslist"
+  ]
+}

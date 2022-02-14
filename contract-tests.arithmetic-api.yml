@@ -1,0 +1,49 @@
+swagger: '2.0'
+info:
+  title: 'Arithmetic API'
+  version: "1.0"
+consumes:
+  - 'application/json; charset=utf-8'
+produces:
+  - 'application/json; charset=utf-8'
+paths:
+  /v1/add:
+    post:
+      summary: 'Add'
+      parameters:
+        - name: 'body'
+          in: 'body'
+          schema:
+            example:
+              operandOne: '2'
+              operandTwo: '4'
+      responses:
+        200:
+          description: ''
+          schema:
+            type: object
+            properties:
+              value: 
+                type: number
+            required:
+              - value
+  /v1/subtract:
+    post:
+      summary: 'Subtract'
+      parameters:
+        - name: 'body'
+          in: 'body'
+          schema:
+            example:
+              operandOne: '2'
+              operandTwo: '4'
+      responses:
+        200:
+          description: ''
+          schema:
+            type: object
+            properties:
+              value: 
+                type: number
+            required:
+              - value
