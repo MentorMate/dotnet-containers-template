@@ -169,10 +169,8 @@ jobs:
            /d:sonar.cs.vstest.reportsPaths="TestResults\arithmetic-operations.unit-tests.trx" \
            /d:sonar.testExecutionReportPaths="TestResults\test-report.xml" \
            /d:sonar.javascript.lcov.reportPaths="TestResults\lcov.info"
-      - name: build dotnet
-        run: dotnet build
-      - name: publish sonar scanner
-        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+          dotnet build
+          ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
   doc-fx:
     name: documentation wiki
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
