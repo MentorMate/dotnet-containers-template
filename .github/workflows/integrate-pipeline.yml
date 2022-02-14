@@ -115,10 +115,10 @@ jobs:
       - editorconfig-check
       - contract-testing
     steps:
-      - uses: actions/setup-java@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
         with:
-          distribution: 'zulu'
-          java-version: '15'
+          java-version: 1.11
       - name: Download api test results
         uses: actions/download-artifact@v2
         with:
@@ -175,13 +175,16 @@ jobs:
         run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
   doc-fx:
     name: documentation wiki
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    needs:
+      - sonar-cloud
     steps:
       - uses: actions/checkout@v1
       - name: Build Metadata
         uses: nikeee/docfx-action@v1.0.0
         with:
-          args: metadata -o .docfx\
+          args: metadata .docs\docfx.json
       - name: Build Documentation
         uses: nikeee/docfx-action@v1.0.0
         with:
