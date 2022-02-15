@@ -126,7 +126,7 @@ jobs:
         with:
           project: 'template'
           path: '**/bin/Debug/net5.0/**/*.dll'
-          format: 'JUnit'    
+          format: 'JUNIT'    
           args: >
             --scan \"**/calculator-app/package*.json\"
             --junitFailOnCVSS 7
