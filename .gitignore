@@ -7,3 +7,4 @@ obj
 **/cypress/videos/
 node_modules
 /TestResults
+.terraform*
