@@ -47,7 +47,8 @@
     "**/tsconfig.json",
     "**/launchSettings.json",
     "**/docker-compose.yml",
-    "**/docker-compose.override.yml"
+    "**/docker-compose.override.yml",
+    "tye.yml"
   ],
   "words": [
     "dapr",
