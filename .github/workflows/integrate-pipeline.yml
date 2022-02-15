@@ -265,7 +265,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Azure Login
-        run: az login --service-principal -u ${{AZ_CLIENT_ID}} -p ${{AZ_CLIENT_SECRET}} -t ${{AZ_TENANT_ID}}
+        run: az login --service-principal -u $AZ_CLIENT_ID -p $AZ_CLIENT_SECRET -t $AZ_TENANT_ID
       - uses: hashicorp/setup-terraform@v1
       - name: Terraform fmt
         run: terraform fmt -check
@@ -277,9 +277,9 @@ jobs:
       - name: Apply
         run: |
           terraform.exe apply -auto-approve \
-            -var "subscription_id=${{AZ_SUBSCRIPTION_ID}}" \
-            -var "client_id=${{AZ_CLIENT_ID}}" \
-            -var "client_secret=${{AZ_CLIENT_SECRET}}"
+            -var "subscription_id=$AZ_SUBSCRIPTION_ID" \
+            -var "client_id=$AZ_CLIENT_ID" \
+            -var "client_secret=$AZ_CLIENT_SECRET"
           echo "$(terraform output kube_config)" > ./azurek8s
       - name: upload cluster config
         uses: actions/upload-artifact@v2
