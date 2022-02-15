@@ -128,7 +128,7 @@ jobs:
           path: '**/bin/Debug/net5.0/**/*.dll'
           format: 'JUNIT'    
           args: >
-            --scan \"**/calculator-app/package*.json\"
+            --scan "**/calculator-app/package*.json"
             --junitFailOnCVSS 7
       - name: upload check results
         uses: actions/upload-artifact@v2
