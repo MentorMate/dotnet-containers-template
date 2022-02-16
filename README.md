@@ -9,4 +9,5 @@ The application is a simple calculator with a React for the front-end and a .NET
 2. Run docker/docker-compose
 
 **For more information see the wiki**
+
 See [Wiki Pages](https://github.com/MentorMate/dotnet-containers-template/wiki)
