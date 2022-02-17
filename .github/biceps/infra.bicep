@@ -53,7 +53,7 @@ resource apiApp 'Microsoft.Web/containerApps@2021-03-01' = {
     kubeEnvironmentId: containerAppEnvironmentId
     configuration: {
       ingress: {
-        external: false
+        external: true
         targetPort: 8080
       }
       secrets: [
@@ -153,4 +153,5 @@ resource webApp 'Microsoft.Web/containerApps@2021-03-01' = {
   }
 }
 
-output fqdn string = webApp.properties.configuration.ingress.fqdn
+output fqdnWeb string = webApp.properties.configuration.ingress.fqdn
+output fqdnApi string = apiApp.properties.configuration.ingress.fqdn

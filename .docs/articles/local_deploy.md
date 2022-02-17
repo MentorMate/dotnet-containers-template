@@ -1,6 +1,6 @@
-# local deploy steps
+# Local deploy steps
 
-## docker build and push
+## Docker build and push
 
 ```shell
 docker build src --file src/Calculator.Services.ArithmeticOperations/Dockerfile --tag dotnet-containers-template-api --label "runnumber=1"

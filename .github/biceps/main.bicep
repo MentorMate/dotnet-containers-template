@@ -39,3 +39,6 @@ module appDeployPlan 'infra.bicep' = {
     registryPassword: registryPassword
   }
 }
+
+output fqdnWeb string = appDeployPlan.properties.configuration.ingress.fqdnWeb
+output fqdnApi string = appDeployPlan.properties.configuration.ingress.fqdnApi

@@ -1,0 +1,31 @@
+config:
+  target: "http://localhost/api"
+  phases:
+    - duration: 10
+      arrivalRate: 5
+      name: Warm up
+    - duration: 20
+      arrivalRate: 5
+      rampTo: 50
+      name: Ramp up load
+    - duration: 30
+      arrivalRate: 50
+      name: Sustained load
+  payload:
+    path: "arithmetic-api.load-tests-data.csv"
+    fields:
+      - "one"
+      - "two"
+  scenarios:
+    - name: "add and subtract"
+      flow:
+        - post:
+            url: "/v1/add"
+            json:
+              operandOne: "{{ one }}"
+              operandTwo: "{{ two }}"
+        - post:
+            url: "/v1/subtract"
+            json:
+              operandOne: "{{ one }}"
+              operandTwo: "{{ two }}"

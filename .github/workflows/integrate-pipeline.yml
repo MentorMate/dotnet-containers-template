@@ -107,7 +107,7 @@ jobs:
       - name: Run api in docker
         run: docker run -d -p "80:80" --rm --name=api-local-instance-for-contract-testing calc/arithmetics.api:local
       - name: Contract tests
-        run: npx dredd contract-tests.arithmetic-api.yml http://localhost -l error
+        run: npx dredd arithmetic-api.contract-tests.yml http://localhost -l error
       - run: docker stop api-local-instance-for-contract-testing
       - run: docker rmi calc/arithmetics.api:local
   dependency-check:
@@ -220,7 +220,7 @@ jobs:
   doc-fx:
     name: documentation wiki
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET Core SDK 6
@@ -251,8 +251,8 @@ jobs:
     strategy:
       matrix:
         services: [
-          { 'imageName': 'calc-api', 'directory': './src/Calculator.Services.ArithmeticOperations' },
-          { 'imageName': 'calc-web', 'directory': './src/Calculator.Web' }
+          { 'imageName': 'calc-api', 'file': './src/Calculator.Services.ArithmeticOperations/Dockerfile' },
+          { 'imageName': 'calc-web', 'dile': './src/Calculator.Web/Dockerfile' }
         ]
     env:
       REGISTRY: ghcr.io
@@ -285,7 +285,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: ${{ matrix.services.directory }}
+          context: ./src
+          file: ${{ matrix.services.file }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -297,6 +298,9 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [publish]
+    outputs:
+      fqdnWeb: ${{ steps.vars.outputs.fqdnWeb }}
+      fqdnApi: ${{ steps.vars.outputs.fqdnApi }}
     steps:
       - uses: actions/checkout@main
       - uses: azure/login@v1
@@ -305,8 +309,72 @@ jobs:
       - name: deploy
         uses: azure/arm-deploy@v1
         with:
+          name: container-app
           scope: subscription
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
           template: ./.github/biceps/main.bicep
           parameters: registry=ghcr.io containerRegistryUsername=${{ github.actor }} containerRegistryPassword='${{ secrets.GITHUB_TOKEN }}' apiImage='${{ needs.publish.outputs.calcApiImage }}' webImage='${{ needs.publish.outputs.calcWebImage }}'
           failOnStdErr: false
+      - name: output variables
+        id: vars
+        run: |
+          fqdnWeb=$(az deployment group show -s ${{ secrets.AZURE_SUBSCRIPTION }} --query properties.outputs.fqdnWeb.value -n container-app -o tsv)
+          fqdnApi=$(az deployment group show -s ${{ secrets.AZURE_SUBSCRIPTION }} --query properties.outputs.fqdnApi.value -n container-app -o tsv)
+          echo "::set-output name=fqdnWeb"
+          echo "::set-output name=fqdnApi"
+  functional-tests:
+    name: functional tests
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache Node Modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-tests-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-tests-${{ env.cache-name }}-
+            ${{ runner.os }}-tests-
+      - name: npm package install
+        run: npm ci --prefix ./src/Calculator.Web/calculator-e2e --cache ~/.npm --prefer-offline --no-audit --silent
+      - name: web lint
+        env:
+          ENV_URL: 'https://${{ needs.deploy.outputs.fqdnWeb }}'
+        run: npm start --prefix ./src/Calculator.Web/calculator-e2e
+      - name: upload functional test video
+        uses: actions/upload-artifact@v2
+        with:
+          name: functional-test-video
+          path: src/Calculator.Web/calculator-e2e/cypress/videos
+      - name: upload functional test screenshots
+        uses: actions/upload-artifact@v2
+        with:
+          name: functional-test-screenshots
+          path: src/Calculator.Web/calculator-e2e/cypress/screenshots
+  artillery-tests:
+    name: artillery load tests
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    container: artilleryio/artillery:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Execute load tests
+        run: /home/node/artillery/bin/artillery run --target https://${{ needs.deploy.outputs.fqdnApi }} arithmetic-api.load-tests.yml 
+  lighthouse-tests:
+    name: lighthouse tests
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Audit URLs using Lighthouse
+        uses: treosh/lighthouse-ci-action@v9
+        with:
+          urls: |
+            https://${{ needs.deploy.outputs.fqdnWeb }}
+          budgetPath: ./lighthouse-budget.json # test performance budgets
+          uploadArtifacts: true # save results as an action artifacts
+          temporaryPublicStorage: true # upload lighthouse report to the temporary storage
