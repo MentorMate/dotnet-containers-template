@@ -213,7 +213,7 @@ jobs:
            /d:sonar.cs.opencover.reportsPaths="${{steps.download-api-tests.outputs.download-path}}/coverage.opencover.xml" \
            /d:sonar.cs.vstest.reportsPaths="${{steps.download-api-tests.outputs.download-path}}/arithmetic-operations.unit-tests.trx" \
            /d:sonar.testExecutionReportPaths="${{steps.download-web-tests.outputs.download-path}}/test-report.xml" \
-           /d:sonar.javascript.lcov.reportPaths="${{steps.download-web-tests.outputs.download-path}}/lcov.info"
+           /d:sonar.javascript.lcov.reportPaths="${{steps.download-web-tests.outputs.download-path}}/lcov.info" \
            /d:sonar.junit.reportPaths="${{steps.download-dependency-results.outputs.download-path}}/dependency-check-junit.xml"
           dotnet build
           ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
@@ -241,7 +241,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/_site
+          publish_dir: .docs/_site
           force_orphan: true
 
   publish:
@@ -250,9 +250,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        services: [
+        services:[
           { 'imageName': 'calc-api', 'file': './src/Calculator.Services.ArithmeticOperations/Dockerfile' },
-          { 'imageName': 'calc-web', 'dile': './src/Calculator.Web/Dockerfile' }
+          { 'imageName': 'calc-web', 'file': './src/Calculator.Web/Dockerfile' }
         ]
     env:
       REGISTRY: ghcr.io
