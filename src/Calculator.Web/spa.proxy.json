@@ -1,8 +1,0 @@
-{
-  "SpaProxyServer": {
-    "ServerUrl": "http://localhost:44464",
-    "LaunchCommand": "npm start",
-    "WorkingDirectory": "/app/calculator-app/",
-    "MaxTimeoutInSeconds": "120"
-  }
-}

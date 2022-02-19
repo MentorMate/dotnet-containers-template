@@ -4,21 +4,19 @@ services:
   api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://0.0.0.0:8080
-    expose:
-      - 8080
+      - ASPNETCORE_URLS=http://0.0.0.0:80
     volumes:
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
 
   web:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://0.0.0.0:8000
-      - ASPNETCORE_HOSTINGSTARTUPASSEMBLIES=Microsoft.AspNetCore.SpaProxy
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - NODE_ENV=development
     expose:
       - 44464
-      - 8000
     ports:
+      - "80:80"
       - "44464:44464"
     volumes:
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro

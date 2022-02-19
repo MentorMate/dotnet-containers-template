@@ -15,7 +15,8 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
   <ItemGroup Label="NuGet Packages">
-    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.1" />
+    <!--<PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.1" />-->
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,3 @@
-// cspell:ignore statestore
-// eslint-disable-next-line no-restricted-globals
-const basePath = `${location.protocol}//${location.hostname}${location.pathname}`;
-
 export interface AppState {
   next: string | null;
   total: string | null;
@@ -14,8 +10,6 @@ export const emptyState: AppState = {
   operation: null,
 };
 
-export const getApiUrl = (route: string): string => basePath + route;
-
 async function operate(operandOne: string | null, operandTwo: string | null, operationSymbol: string): Promise<string> {
   const operationMap: Record<string, string> = {
     '+': 'add',
@@ -23,7 +17,7 @@ async function operate(operandOne: string | null, operandTwo: string | null, ope
   };
   const method = operationMap[operationSymbol];
   console.debug(`Calling ${method} service`);
-  const rawResponse = await fetch(getApiUrl(`api/v1/${method}`), {
+  const rawResponse = await fetch(`api/v1/${method}`, {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
@@ -44,7 +38,7 @@ function isNumber(item: string): boolean {
 }
 
 export async function getState(): Promise<AppState> {
-  const rawResponse = await fetch(getApiUrl('dapr/v1.0/state/statestore/calculatorState'));
+  const rawResponse = await fetch('state');
   const calculatorState = await rawResponse.json();
   return calculatorState;
 }
@@ -57,7 +51,7 @@ export function saveState(state: AppState): void {
     value: state
   }];
 
-  fetch(getApiUrl('dapr/v1.0/state/statestore'), {
+  fetch('state', {
     method: "POST",
     body: JSON.stringify(body),
     headers: {

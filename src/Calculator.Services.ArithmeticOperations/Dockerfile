@@ -1,5 +1,7 @@
 ARG NET_IMAGE=6.0-bullseye-slim
 FROM mcr.microsoft.com/dotnet/aspnet:${NET_IMAGE} AS base
+EXPOSE 80
+EXPOSE 443
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:${NET_IMAGE} AS build

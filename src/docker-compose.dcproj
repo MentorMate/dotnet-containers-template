@@ -9,8 +9,6 @@
     <DockerServiceName>proxy</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
-    <None Include=".docker\nginx.proxy.conf" />
-    <None Include=".docker\dapr-components" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>

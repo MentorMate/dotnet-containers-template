@@ -9,6 +9,14 @@ services:
     container_name: calc-api
     networks:
       - calc-dapr
+  api-dapr:
+    image: "daprio/daprd"
+    container_name: calc-api-darp
+    command: ["./daprd",
+      "-app-id", "api",
+      "-app-port", "80",
+      "-placement-host-address", "placement:50006",]
+    network_mode: "service:api"
 
   web:
     image: ${REGISTRY:-calc}/web:${TAG:-latest}
@@ -18,37 +26,19 @@ services:
     container_name: calc-web
     networks:
       - calc-dapr
-
-  dapr:
+  web-dapr:
     image: "daprio/daprd"
-    container_name: calc-darp
+    container_name: calc-web-darp
     command: ["./daprd",
-        "-app-id", "web",
-        "-dapr-http-port", "3500",
-        "-components-path", "/components",
-        "-allowed-origins", "http://localhost:44464"]
-    expose:
-      - 3500
+      "-app-id", "web",
+      "-app-port", "80",
+      "-placement-host-address", "placement:50006",
+      "-components-path", "/components" ]
     depends_on:
       - redis
     volumes:
-      - "./.docker/dapr-components/:/components"
-    networks:
-      - calc-dapr
-
-  proxy:
-    image: nginx:latest
-    container_name: calc-proxy
-    ports:
-      - "80:80"
-    depends_on:
-      - web
-      - dapr
-      - api
-    volumes:
-      - ./.docker/nginx.proxy.conf:/etc/nginx/nginx.conf
-    networks:
-      - calc-dapr
+      - "./dapr-components/:/components"
+    network_mode: "service:web"
 
   ### Redis state store
   redis:
@@ -58,6 +48,15 @@ services:
       - "6379:6379"
     expose:
       - 6379
+    networks:
+      - calc-dapr
+
+  placement:
+    image: "daprio/dapr"
+    container_name: calc-placement
+    command: ["./placement", "-port", "50006"]
+    ports:
+      - "50006:50006"
     networks:
       - calc-dapr
 
