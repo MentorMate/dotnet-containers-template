@@ -250,7 +250,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        services:[
+        services: [
           { 'imageName': 'calc-api', 'file': './src/Calculator.Services.ArithmeticOperations/Dockerfile' },
           { 'imageName': 'calc-web', 'file': './src/Calculator.Web/Dockerfile' }
         ]
