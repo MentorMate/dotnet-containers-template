@@ -339,8 +339,8 @@ jobs:
       - name: output variables
         id: vars
         run: |
-          fqdnWeb=$(az deployment sub show --subscription ${{ secrets.AZURE_SUBSCRIPTION }} --query properties.outputs.fqdnWeb.value -n container-app -o tsv)
-          fqdnApi=$(az deployment sub show --subscription ${{ secrets.AZURE_SUBSCRIPTION }} --query properties.outputs.fqdnApi.value -n container-app -o tsv)
+          fqdnWeb=$(az deployment sub show --subscription "${{ secrets.AZURE_SUBSCRIPTION }}" --query properties.outputs.fqdnWeb.value -n container-app -o tsv)
+          fqdnApi=$(az deployment sub show --subscription "${{ secrets.AZURE_SUBSCRIPTION }}" --query properties.outputs.fqdnApi.value -n container-app -o tsv)
           echo "::set-output name=fqdnWeb"
           echo "::set-output name=fqdnApi"
   functional-tests:
