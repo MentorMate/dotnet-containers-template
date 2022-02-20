@@ -341,8 +341,8 @@ jobs:
         run: |
           fqdnWeb=$(az deployment sub show --query properties.outputs.fqdnWeb.value -n container-app -o tsv)
           fqdnApi=$(az deployment sub show --query properties.outputs.fqdnApi.value -n container-app -o tsv)
-          echo "::set-output name=fqdnWeb"
-          echo "::set-output name=fqdnApi"
+          echo "::set-output name=fqdnWeb::$fqdnWeb"
+          echo "::set-output name=fqdnApi::$fqdnApi"
   functional-tests:
     name: functional tests
     runs-on: ubuntu-latest
