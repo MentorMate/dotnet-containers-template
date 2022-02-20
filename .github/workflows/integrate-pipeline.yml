@@ -332,7 +332,7 @@ jobs:
           deploymentName: container-app
           scope: subscription
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          resourceGroupName: calc-template
+          region: WestEurope
           template: ./.github/biceps/main.bicep
           parameters: registry=ghcr.io containerRegistryUsername=${{ github.actor }} containerRegistryPassword=${{ secrets.GITHUB_TOKEN }} apiImage=${{ needs.publish.outputs.calcApiImage }} webImage=${{ needs.publish.outputs.calcWebImage }}
           failOnStdErr: false
