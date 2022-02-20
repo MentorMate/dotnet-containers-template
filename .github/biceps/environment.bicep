@@ -33,5 +33,4 @@ resource env 'Microsoft.Web/kubeEnvironments@2021-02-01' = {
 }
 
 output clientId string = law.properties.customerId
-output clientSecret string = law.listKeys().primarySharedKey
 output envId string = env.id

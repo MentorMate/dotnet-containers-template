@@ -40,8 +40,8 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   resource blobService 'blobServices' = {
     name: 'default'
 
-    resource blobServiceWeb 'containers' = {
-      name: '$app'
+    resource blobServiceContainerState 'containers' = {
+      name: 'state'
     }
   }
 }
@@ -54,7 +54,7 @@ resource apiApp 'Microsoft.Web/containerApps@2021-03-01' = {
     configuration: {
       ingress: {
         external: true
-        targetPort: 8080
+        targetPort: 80
       }
       secrets: [
         {
@@ -73,16 +73,39 @@ resource apiApp 'Microsoft.Web/containerApps@2021-03-01' = {
     template: {
       containers: [
         {
+          name: 'calc-api'
           image: apiImage
         }
       ]
       scale: {
         minReplicas: 0
         maxReplicas: 3
+        rules: [
+          {
+            name: 'cpu-scaling'
+            custom: {
+              type: 'cpu'
+              metadata: {
+                type: 'Utilization'
+                value: '85'
+              }
+            }
+          }
+          {
+            name: 'memory-scaling'
+            custom: {
+              type: 'memory'
+              metadata: {
+                type: 'Utilization'
+                value: '85'
+              }
+            }
+          }
+        ]
       }
       dapr: {
         enabled: true
-        appPort: 8080
+        appPort: 80
         appId: 'api'
       }
     }
@@ -97,12 +120,16 @@ resource webApp 'Microsoft.Web/containerApps@2021-03-01' = {
     configuration: {
       ingress: {
         external: true
-        targetPort: 8000
+        targetPort: 80
       }
       secrets: [
         {
           name: 'container-registry-password'
           value: registryPassword
+        }
+        {
+          name: 'storage-key'
+          value: '${listKeys(storage.id, storage.apiVersion).keys[0].value}'
         }
       ]
       registries: [
@@ -116,16 +143,17 @@ resource webApp 'Microsoft.Web/containerApps@2021-03-01' = {
     template: {
       containers: [
         {
+          name: 'calc-web'
           image: webImage
         }
       ]
       scale: {
-        minReplicas: 0
+        minReplicas: 1
         maxReplicas: 1
       }
       dapr: {
         enabled: true
-        appPort: 8000
+        appPort: 80
         appId: 'web'
         components: [
           {
@@ -139,11 +167,11 @@ resource webApp 'Microsoft.Web/containerApps@2021-03-01' = {
               }
               {
                 name: 'accountKey'
-                secretRef: '${listKeys(storage.id, storage.apiVersion).keys[0].value}'
+                secretRef: 'storage-key'
               }
               {
                 name: 'containerName'
-                value: '${storage_name}/default/$app'
+                value: 'state'
               }
             ]
           }

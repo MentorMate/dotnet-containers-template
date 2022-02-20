@@ -5,11 +5,11 @@ param storage_name string = 'calctemplatestorage'
 param apiImage string
 param webImage string
 param registry string
-param registryUsername string
+param containerRegistryUsername string
 param location_name string = deployment().location
 
 @secure()
-param registryPassword string
+param containerRegistryPassword string
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: app_name
@@ -35,10 +35,10 @@ module appDeployPlan 'infra.bicep' = {
     apiImage: apiImage
     webImage: webImage
     registry: registry
-    registryUsername: registryUsername
-    registryPassword: registryPassword
+    registryUsername: containerRegistryUsername
+    registryPassword: containerRegistryPassword
   }
 }
 
-output fqdnWeb string = appDeployPlan.properties.configuration.ingress.fqdnWeb
-output fqdnApi string = appDeployPlan.properties.configuration.ingress.fqdnApi
+output fqdnWeb string = appDeployPlan.outputs.fqdnWeb
+output fqdnApi string = appDeployPlan.outputs.fqdnApi

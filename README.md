@@ -12,4 +12,4 @@ The application is a simple calculator with a React for the front-end and a .NET
 
 For more information see the wiki
 
-See [Wiki Pages](https://github.com/MentorMate/dotnet-containers-template/wiki)
+See [Wiki Pages](https://mentormate.github.io/dotnet-containers-template/)

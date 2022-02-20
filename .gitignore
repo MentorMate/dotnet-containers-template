@@ -5,7 +5,8 @@ obj
 *.csproj.user
 **/cypress/screenshots/
 **/cypress/videos/
+.terraform*
 node_modules
 /TestResults
 /.tools
-.terraform*
+/.github/biceps/main.json

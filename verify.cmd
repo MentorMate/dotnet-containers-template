@@ -18,8 +18,13 @@ echo ***** web lint ***** &&^
 npm run lint --prefix ./src/Calculator.Web/calculator-app &&^
 echo ***** web tests ***** &&^
 npm run test --prefix ./src/Calculator.Web/calculator-app &&^
+echo ***** build all ***** &&^
+dotnet build &&^
 echo ***** api tests ***** &&^
 dotnet test src/Calculator.Services.ArithmeticOperations.Tests/Calculator.Services.ArithmeticOperations.Tests.csproj &&^
+echo ***** verify bicep ***** &&^
+echo Node: run 'az bicep install' before that &&^
+az bicep build -f .github/biceps/main.bicep -o none &&^
 echo 'VERIFIED'
 
 set /p DUMMY=Hit ENTER to continue...

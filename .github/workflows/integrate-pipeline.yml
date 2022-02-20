@@ -221,6 +221,16 @@ jobs:
     name: documentation wiki
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: windows-2022
+    needs:
+      - dotnet-build-test
+      - dotnet-format
+      - web-lint-test
+      - spell-check
+      - git-leaks
+      - editorconfig-check
+      - contract-testing
+      - dependency-check
+      - markdown-lint
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET Core SDK 6
@@ -247,6 +257,16 @@ jobs:
   publish:
     name: build and push docker
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs:
+      - dotnet-build-test
+      - dotnet-format
+      - web-lint-test
+      - spell-check
+      - git-leaks
+      - editorconfig-check
+      - contract-testing
+      - dependency-check
+      - markdown-lint
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -309,17 +329,18 @@ jobs:
       - name: deploy
         uses: azure/arm-deploy@v1
         with:
-          name: container-app
+          deploymentName: container-app
           scope: subscription
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          resourceGroupName: calc-template
           template: ./.github/biceps/main.bicep
-          parameters: registry=ghcr.io containerRegistryUsername=${{ github.actor }} containerRegistryPassword='${{ secrets.GITHUB_TOKEN }}' apiImage='${{ needs.publish.outputs.calcApiImage }}' webImage='${{ needs.publish.outputs.calcWebImage }}'
+          parameters: registry=ghcr.io containerRegistryUsername=${{ github.actor }} containerRegistryPassword=${{ secrets.GITHUB_TOKEN }} apiImage=${{ needs.publish.outputs.calcApiImage }} webImage=${{ needs.publish.outputs.calcWebImage }}
           failOnStdErr: false
       - name: output variables
         id: vars
         run: |
-          fqdnWeb=$(az deployment group show -s ${{ secrets.AZURE_SUBSCRIPTION }} --query properties.outputs.fqdnWeb.value -n container-app -o tsv)
-          fqdnApi=$(az deployment group show -s ${{ secrets.AZURE_SUBSCRIPTION }} --query properties.outputs.fqdnApi.value -n container-app -o tsv)
+          fqdnWeb=$(az deployment sub show --subscription ${{ secrets.AZURE_SUBSCRIPTION }} --query properties.outputs.fqdnWeb.value -n container-app -o tsv)
+          fqdnApi=$(az deployment sub show --subscription ${{ secrets.AZURE_SUBSCRIPTION }} --query properties.outputs.fqdnApi.value -n container-app -o tsv)
           echo "::set-output name=fqdnWeb"
           echo "::set-output name=fqdnApi"
   functional-tests:
@@ -341,9 +362,10 @@ jobs:
       - name: npm package install
         run: npm ci --prefix ./src/Calculator.Web/calculator-e2e --cache ~/.npm --prefer-offline --no-audit --silent
       - name: web lint
-        env:
-          ENV_URL: 'https://${{ needs.deploy.outputs.fqdnWeb }}'
-        run: npm start --prefix ./src/Calculator.Web/calculator-e2e
+        run: |
+          echo '{"ENV_URL":"https://${{ needs.deploy.outputs.fqdnWeb }}"}' > src/Calculator.Web/calculator-e2e/cypress.env.json
+          npm start --prefix ./src/Calculator.Web/calculator-e2e
+        continue-on-error: true
       - name: upload functional test video
         uses: actions/upload-artifact@v2
         with:
@@ -364,6 +386,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Execute load tests
         run: /home/node/artillery/bin/artillery run --target https://${{ needs.deploy.outputs.fqdnApi }} arithmetic-api.load-tests.yml 
+        continue-on-error: true
   lighthouse-tests:
     name: lighthouse tests
     runs-on: ubuntu-latest
@@ -378,3 +401,4 @@ jobs:
           budgetPath: ./lighthouse-budget.json # test performance budgets
           uploadArtifacts: true # save results as an action artifacts
           temporaryPublicStorage: true # upload lighthouse report to the temporary storage
+        continue-on-error: true
