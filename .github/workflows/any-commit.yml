@@ -241,7 +241,6 @@ jobs:
       - contract-testing
       - dependency-check
       - markdown-lint
-      - sonar-cloud
     steps:
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
