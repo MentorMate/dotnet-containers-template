@@ -2,11 +2,18 @@ name: Build and Test
 
 on:
   push:
-    branches-ignore: [main, release-*]
-    tags:
-      - 'v*'
+    branches-ignore: [main]
 
 jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/dotnet@master
+        continue-on-error: true # To make sure that SARIF upload gets called
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
   dotnet-build-test:
     name: dotnet tests
     runs-on: ubuntu-latest
@@ -231,39 +238,3 @@ jobs:
            /d:sonar.junit.reportPaths="${{steps.download-dependency-results.outputs.download-path}}/dependency-check-junit.xml"
           dotnet build
           ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-  doc-fx:
-    name: documentation wiki
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    runs-on: windows-2022
-    needs:
-      - dotnet-build-test
-      - dotnet-format
-      - web-lint-test
-      - spell-check
-      - git-leaks
-      - editorconfig-check
-      - contract-testing
-      - dependency-check
-      - markdown-lint
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup .NET Core SDK 6
-        uses: actions/setup-dotnet@v1.8.0
-        with:
-          dotnet-version: '6.0.x'
-      - name: Setup DocFX
-        uses: crazy-max/ghaction-chocolatey@v1
-        with:
-          args: install docfx
-      - name: Install dependencies
-        run: dotnet restore
-      - name: DocFX Metadata
-        run: docfx metadata .docs/docfx.json
-      - name: DocFX Build
-        run: docfx .docs/docfx.json
-      - name: Publish
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .docs/_site
-          force_orphan: true
