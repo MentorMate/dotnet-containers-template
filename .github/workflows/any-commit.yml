@@ -2,7 +2,7 @@ name: Build and Test
 
 on:
   push:
-    branches-ignore: [main]
+    branches-ignore: [main, release-*]
 
 jobs:
   dotnet-build-test:
@@ -133,6 +133,21 @@ jobs:
           name: dependency-check-results
           path: ${{github.workspace}}/reports
         if: ${{ always() }}
+  docker-metadata:
+    runs-on: ubuntu-latest
+    name: Extract Docker metadata
+    steps:
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.services.imageName }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=ref,event=branch
+            type=sha
   sonar-cloud:
     name: sonar cloud analysis
     runs-on: ubuntu-latest
