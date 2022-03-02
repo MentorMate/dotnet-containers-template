@@ -3,6 +3,8 @@ name: Build and Test
 on:
   push:
     branches-ignore: [main, release-*]
+    tags:
+      - 'v*'
 
 jobs:
   dotnet-build-test:
