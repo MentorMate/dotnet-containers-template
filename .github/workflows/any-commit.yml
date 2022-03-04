@@ -101,6 +101,15 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build api in docker
         run: docker build --no-cache -t calc/arithmetics.api:local -f src/Calculator.Services.ArithmeticOperations/Dockerfile src/
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'calc/arithmetics.api:local'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
       - name: Run api in docker
         run: docker run -d -p "80:80" --rm --name=api-local-instance-for-contract-testing calc/arithmetics.api:local
       - name: Contract tests
