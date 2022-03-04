@@ -447,7 +447,8 @@ jobs:
           budgetPath: ./lighthouse-budget.json # test performance budgets
           uploadArtifacts: true # save results as an action artifacts
           temporaryPublicStorage: true # upload lighthouse report to the temporary storage
-  Notification:
+  notification:
+    name: notification
     needs: [deploy]
     steps:
       - name: Google Chat Notification
