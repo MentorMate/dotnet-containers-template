@@ -309,7 +309,7 @@ jobs:
         with:
           name: Build
           url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-          status: ${{ job.status }}
+          status: "Fail"
         if: "${{ steps.dotnet-build-test.outputs.exit_code != 0 || steps.dotnet-format.outputs.exit_code != 0 || steps.web-lint-test.outputs.exit_code != 0 || steps.spell-check.outputs.exit_code != 0 || steps.git-leaks.outputs.exit_code != 0 || steps.editorconfig-check.outputs.exit_code != 0 || steps.contract-testing.outputs.exit_code != 0 || steps.dependency-check.outputs.exit_code != 0 || steps.markdown-lint.outputs.exit_code != 0 || steps.security.outputs.exit_code != 0 || steps.sonar-cloud.outputs.exit_code != 0 }}"
   notification-ok:
     name: notification if Succeeded
@@ -332,5 +332,5 @@ jobs:
         with:
           name: Build
           url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-          status: ${{ job.status }}
-        if: "${{ steps.dotnet-build-test.outputs.exit_code == 0 && steps.dotnet-format.outputs.exit_code == 0 && steps.web-lint-test.outputs.exit_code == 0 && steps.spell-check.outputs.exit_code == 0 && steps.git-leaks.outputs.exit_code == 0 && steps.editorconfig-check.outputs.exit_code == 0 && steps.contract-testing.outputs.exit_code == 0 && steps.dependency-check.outputs.exit_code == 0 && steps.markdown-lint.outputs.exit_code == 0 && steps.security.outputs.exit_code == 0 && steps.sonar-cloud.outputs.exit_code == 0 }}"
+          status: "Succeeded"
+        if: "${{ steps.dotnet-build-test.outputs.exit_code != 1 && steps.dotnet-format.outputs.exit_code != 1 && steps.web-lint-test.outputs.exit_code != 1 && steps.spell-check.outputs.exit_code != 1 && steps.git-leaks.outputs.exit_code != 1 && steps.editorconfig-check.outputs.exit_code != 1 && steps.contract-testing.outputs.exit_code != 1 && steps.dependency-check.outputs.exit_code != 1 && steps.markdown-lint.outputs.exit_code != 1 && steps.security.outputs.exit_code != 1 && steps.sonar-cloud.outputs.exit_code != 1 }}"
