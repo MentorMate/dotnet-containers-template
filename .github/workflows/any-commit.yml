@@ -125,8 +125,8 @@ jobs:
         uses: shogo82148/actions-setup-redis@v1
         with:
           redis-version: '6.x'
-        run: redis-cli ping
       - name: Run api in docker
+        run: redis-cli ping
         run: docker run -d -p "80:80" --rm --name=api-local-instance-for-contract-testing calc/arithmetics.api:local
       - name: Contract tests
         run: npx dredd arithmetic-api.contract-tests.yml http://localhost -l error
@@ -293,6 +293,6 @@ jobs:
         uses: Co-qn/google-chat-notification@releases/v1
         with:
           name: Build
-          url: "https://chat.googleapis.com/v1/spaces/AAAAQcCmYQY/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=aacP7-Ah-kT9ZgdmI1ahr_phNJGI24_rS06ai-aK24g%3D"
+          url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
           status: ${{ job.status }}
         if: always()
