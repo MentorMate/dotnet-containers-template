@@ -299,7 +299,7 @@ jobs:
           name: Build
           url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
           status: 'failure'
-        if: "${{ steps.dotnet-build-test.outputs.exit_code != 1 || steps.dotnet-format.outputs.exit_code != 1 || steps.web-lint-test.outputs.exit_code != 1 || steps.spell-check.outputs.exit_code != 1 || steps.git-leaks.outputs.exit_code != 1 || steps.editorconfig-check.outputs.exit_code != 1 || steps.contract-testing.outputs.exit_code != 1 || steps.dependency-check.outputs.exit_code != 1 || steps.markdown-lint.outputs.exit_code != 1 || steps.security.outputs.exit_code != 1 || steps.sonar-cloud.outputs.exit_code != 1 }}"
+        if: "${{ steps.dotnet-build-test.outputs.exit_code == 1 || steps.dotnet-format.outputs.exit_code == 1 || steps.web-lint-test.outputs.exit_code == 1 || steps.spell-check.outputs.exit_code == 1 || steps.git-leaks.outputs.exit_code == 1 || steps.editorconfig-check.outputs.exit_code == 1 || steps.contract-testing.outputs.exit_code == 1 || steps.dependency-check.outputs.exit_code == 1 || steps.markdown-lint.outputs.exit_code == 1 || steps.security.outputs.exit_code == 1 || steps.sonar-cloud.outputs.exit_code == 1 }}"
   notification-ok:
     name: notification if Succeeded
     runs-on: ubuntu-latest
@@ -322,4 +322,4 @@ jobs:
           name: Build
           url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
           status: 'success'
-        if: "${{ steps.dotnet-build-test.outputs.exit_code != 0 && steps.dotnet-format.outputs.exit_code != 0 && steps.web-lint-test.outputs.exit_code != 0 && steps.spell-check.outputs.exit_code != 0 && steps.git-leaks.outputs.exit_code != 0 && steps.editorconfig-check.outputs.exit_code != 0 && steps.contract-testing.outputs.exit_code != 0 && steps.dependency-check.outputs.exit_code != 0 && steps.markdown-lint.outputs.exit_code != 0 && steps.security.outputs.exit_code != 0 && steps.sonar-cloud.outputs.exit_code != 0 }}"
+        if: "${{ steps.dotnet-build-test.outputs.exit_code == 0 && steps.dotnet-format.outputs.exit_code == 0 && steps.web-lint-test.outputs.exit_code == 0 && steps.spell-check.outputs.exit_code == 0 && steps.git-leaks.outputs.exit_code == 0 && steps.editorconfig-check.outputs.exit_code == 0 && steps.contract-testing.outputs.exit_code == 0 && steps.dependency-check.outputs.exit_code == 0 && steps.markdown-lint.outputs.exit_code == 0 && steps.security.outputs.exit_code == 0 && steps.sonar-cloud.outputs.exit_code == 0 }}"
