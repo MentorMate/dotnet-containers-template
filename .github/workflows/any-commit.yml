@@ -125,8 +125,8 @@ jobs:
         uses: shogo82148/actions-setup-redis@v1
         with:
           redis-version: '6.x'
+      - run: redis-cli ping
       - name: Run api in docker
-        run: redis-cli ping
         run: docker run -d -p "80:80" --rm --name=api-local-instance-for-contract-testing calc/arithmetics.api:local
       - name: Contract tests
         run: npx dredd arithmetic-api.contract-tests.yml http://localhost -l error
