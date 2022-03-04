@@ -118,6 +118,18 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+      - name: Build web in docker
+        run: docker build --no-cache -t calc/arithmetics.web:local -f src/Calculator.Web/Dockerfile src/
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'calc/arithmetics.web:local'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
       - name: Redis run and tests
         uses: shogo82148/actions-setup-redis@v1
         with:
