@@ -316,4 +316,4 @@ jobs:
       - name: Google Chat Notification
         uses: wei/curl@v1
         with:
-          args: -H "Content-Type: application/json" -X POST -d "{\"text\":\"DEPLOY_OK\"}" -s ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+          args: -H 'Content-Type: application/json' -X POST -d '{"text":"DEPLOY_OK"}' -s ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
