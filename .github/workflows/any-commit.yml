@@ -301,4 +301,4 @@ jobs:
     steps:
       - name: Google Chat Notification
         run: |
-          curl -H 'Content-Type: application/json' -X POST -d '{"text": "DEPLOY_OK"}' -s ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+          curl -H 'Content-Type: application/json' -X POST -d '{"text": "DEPLOY_OK"}' -s '${{ secrets.GOOGLE_CHAT_WEBHOOK }}&token=aacP7-Ah-kT9ZgdmI1ahr_phNJGI24_rS06ai-aK24g%3D'
