@@ -314,6 +314,4 @@ jobs:
       - sonar-cloud
     steps:
       - name: Google Chat Notification
-        uses: wei/curl@v1
-        with:
-          args: echo ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+        run: echo ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
