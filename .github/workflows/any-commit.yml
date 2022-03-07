@@ -8,7 +8,6 @@ jobs:
   dotnet-build-test:
     name: dotnet tests
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET Core SDK 6
@@ -31,7 +30,6 @@ jobs:
         if: ${{ always() }}
   web-lint-test:
     name: web lint and tests
-    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -60,7 +58,6 @@ jobs:
         if: ${{ always() }}
   dotnet-format:
     name: dotnet lint
-    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -73,14 +70,12 @@ jobs:
         run: dotnet format style --verify-no-changes
   spell-check:
     name: spell check
-    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - run: npx cspell --no-progress "**/*"
   git-leaks:
     name: secrets detection
-    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -89,21 +84,18 @@ jobs:
       - uses: zricethezav/gitleaks-action@master
   editorconfig-check:
     name: .editorconfig lint
-    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: editorconfig-checker/action-editorconfig-checker@v1
   markdown-lint:
     name: markdown lint
-    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - run: npx markdownlint-cli **/*.md --ignore **/node_modules/**
   trivy:
     name: docker scan for vulnerabilities
-    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -120,7 +112,6 @@ jobs:
           severity: 'CRITICAL,HIGH'
   redis:
     name: redis
-    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - name: Redis run and tests
@@ -130,7 +121,6 @@ jobs:
       - run: redis-cli ping
   contract-testing:
     name: contract tests
-    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -149,7 +139,6 @@ jobs:
       - run: docker rmi calc/arithmetics.api:local
   dependency-check:
     runs-on: ubuntu-latest
-    continue-on-error: true
     name: dependency check
     steps:
       - uses: actions/checkout@v2
@@ -176,7 +165,6 @@ jobs:
         if: ${{ always() }}
   docker-metadata:
     runs-on: ubuntu-latest
-    continue-on-error: true
     name: Extract Docker metadata
     steps:
       - name: Extract Docker metadata
@@ -192,7 +180,6 @@ jobs:
             type=sha
   sonar-cloud:
     name: sonar cloud analysis
-    continue-on-error: true
     runs-on: ubuntu-latest
     needs:
       - dotnet-build-test
@@ -274,7 +261,6 @@ jobs:
           ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
   snyk:
     name: snyk
-    continue-on-error: true
     runs-on: ubuntu-latest
     needs:
       - dotnet-build-test
