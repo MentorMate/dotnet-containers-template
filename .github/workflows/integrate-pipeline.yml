@@ -155,7 +155,7 @@ jobs:
         id: dependency-check
         with:
           project: 'template'
-          path: '**/bin/Debug/net5.0/**/*.dll'
+          path: '**/bin/Debug/net6.0/**/*.dll'
           format: 'JUNIT'
           args: >
             --scan "**/calculator-app/package*.json"
