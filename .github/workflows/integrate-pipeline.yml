@@ -149,6 +149,18 @@ jobs:
         uses: actions/setup-dotnet@v1.8.0
         with:
           dotnet-version: '6.0.x'
+      - name: Cache Node Modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+      - name: npm package install
+        run: npm ci --prefix ./src/Calculator.Web/calculator-app --cache ~/.npm --prefer-offline --no-audit --silent
       - name: Build dotnet projects
         run: dotnet build -c Debug src/Calculator.Services.ArithmeticOperations.Tests/Calculator.Services.ArithmeticOperations.Tests.csproj
       - uses: dependency-check/Dependency-Check_Action@main
@@ -156,7 +168,7 @@ jobs:
         with:
           project: 'template'
           path: '**/bin/Debug/net6.0/**/*.dll'
-          format: 'JUNIT'
+          format: 'JUNIT'    
           args: >
             --scan "**/calculator-app/package*.json"
             --junitFailOnCVSS 7
