@@ -314,4 +314,4 @@ jobs:
       - sonar-cloud
     steps:
       - name: Google Chat Notification
-      - run: curl -H "Content-Type: application/json" -X POST -d "{\"text\":\"DEPLOY_OK\"}" -s "${{ secrets.GOOGLE_CHAT_WEBHOOK }}"
+        run: echo "test"    
