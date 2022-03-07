@@ -310,8 +310,8 @@ jobs:
       - markdown-lint
       - trivy
       - redis
-      - security
+      - snyk
       - sonar-cloud
     steps:
       - name: Google Chat Notification
-        run: echo "test"    
+        run: echo "test"
