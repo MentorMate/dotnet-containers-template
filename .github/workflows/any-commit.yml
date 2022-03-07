@@ -91,6 +91,27 @@ jobs:
           contains(github.event.comment.body, '@check-spelling-bot apply')
         ) }}
       with:
+        extra_dictionaries:
+          cspell:cpp/cpp.txt
+          cspell:filetypes/filetypes.txt
+          cspell:aws/aws.txt
+          cspell:npm/npm.txt
+          cspell:html/html.txt
+          cspell:django/django.txt
+          cspell:css/css.txt
+          cspell:golang/go.txt
+          cspell:fullstack/fullstack.txt
+          cspell:csharp/csharp.txt
+          cspell:java/java.txt
+          cspell:scala/scala.txt
+          cspell:rust/rust.txt
+          cspell:ruby/ruby.txt
+          cspell:python/python.txt
+          cspell:php/php.txt
+          cspell:lua/lua.txt
+          cspell:dotnet/dotnet.txt
+          cspell:node/node.txt
+          cspell:ada/ada.txt
         experimental_apply_changes_via_bot: 1
   git-leaks:
     name: secrets detection
