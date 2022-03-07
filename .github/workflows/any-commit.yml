@@ -101,8 +101,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: npx markdownlint-cli **/*.md --ignore **/node_modules/**
-  contract-testing:
-    name: contract tests
+  trivy:
+    name: docker scan for vulnerabilities
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
@@ -118,18 +118,24 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-      - name: Build web in docker
-        run: docker build --no-cache -t calc/arithmetics.web:local -f src/Calculator.Web/Dockerfile src/
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+  redis:
+    name: redis
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Redis run and tests
+        uses: shogo82148/actions-setup-redis@v1
         with:
-          image-ref: 'calc/arithmetics.web:local'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
+          redis-version: '6.x'
+      - run: redis-cli ping
+  contract-testing:
+    name: contract tests
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build api in docker
+        run: docker build --no-cache -t calc/arithmetics.api:local -f src/Calculator.Services.ArithmeticOperations/Dockerfile src/
       - name: Redis run and tests
         uses: shogo82148/actions-setup-redis@v1
         with:
@@ -266,8 +272,8 @@ jobs:
            /d:sonar.junit.reportPaths="${{steps.download-dependency-results.outputs.download-path}}/dependency-check-junit.xml"
           dotnet build
           ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-  security:
-    name: security
+  snyk:
+    name: snyk
     continue-on-error: true
     runs-on: ubuntu-latest
     needs:
@@ -289,29 +295,6 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
             args: --file=/github/workspace/Calculator.sln
-  notification-fail:
-    name: notification if fail
-    runs-on: ubuntu-latest
-    needs:
-      - dotnet-build-test
-      - dotnet-format
-      - web-lint-test
-      - spell-check
-      - git-leaks
-      - editorconfig-check
-      - contract-testing
-      - dependency-check
-      - markdown-lint
-      - security
-      - sonar-cloud
-    steps:
-      - name: Google Chat Notification
-        uses: Co-qn/google-chat-notification@releases/v1
-        with:
-          name: Build
-          url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-          status: 'failure'
-        if: "${{ steps.dotnet-build-test.outputs.exit_code == 1 || steps.dotnet-format.outputs.exit_code == 1 || steps.web-lint-test.outputs.exit_code == 1 || steps.spell-check.outputs.exit_code == 1 || steps.git-leaks.outputs.exit_code == 1 || steps.editorconfig-check.outputs.exit_code == 1 || steps.contract-testing.outputs.exit_code == 1 || steps.dependency-check.outputs.exit_code == 1 || steps.markdown-lint.outputs.exit_code == 1 || steps.security.outputs.exit_code == 1 || steps.sonar-cloud.outputs.exit_code == 1 }}"
   notification-ok:
     name: notification if Succeeded
     runs-on: ubuntu-latest
@@ -325,13 +308,10 @@ jobs:
       - contract-testing
       - dependency-check
       - markdown-lint
+      - trivy
+      - redis
       - security
       - sonar-cloud
     steps:
       - name: Google Chat Notification
-        uses: Co-qn/google-chat-notification@releases/v1
-        with:
-          name: Build
-          url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-          status: 'success'
-        if: "${{ steps.dotnet-build-test.outputs.exit_code == 0 && steps.dotnet-format.outputs.exit_code == 0 && steps.web-lint-test.outputs.exit_code == 0 && steps.spell-check.outputs.exit_code == 0 && steps.git-leaks.outputs.exit_code == 0 && steps.editorconfig-check.outputs.exit_code == 0 && steps.contract-testing.outputs.exit_code == 0 && steps.dependency-check.outputs.exit_code == 0 && steps.markdown-lint.outputs.exit_code == 0 && steps.security.outputs.exit_code == 0 && steps.sonar-cloud.outputs.exit_code == 0 }}"
+        run: curl -H "Content-Type: application/json" -X POST -d "{\"text\":\"DEPLOY_OK\"}" -s "${{ secrets.GOOGLE_CHAT_WEBHOOK }}"
