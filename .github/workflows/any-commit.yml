@@ -284,7 +284,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-            args: --file=/github/workspace/Calculator.sln
+            args: --all-projects
   notification:
     name: notification
     runs-on: ubuntu-latest
