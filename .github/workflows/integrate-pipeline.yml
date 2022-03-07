@@ -168,7 +168,7 @@ jobs:
         with:
           project: 'template'
           path: '**/bin/Debug/net6.0/**/*.dll'
-          format: 'JUNIT'    
+          format: 'JUNIT'
           args: >
             --scan "**/calculator-app/package*.json"
             --junitFailOnCVSS 7
@@ -191,6 +191,8 @@ jobs:
       - contract-testing
       - dependency-check
       - markdown-lint
+      - redis
+      - trivy
     steps:
       - name: Set up JDK 11
         uses: actions/setup-java@v1
@@ -271,6 +273,8 @@ jobs:
       - contract-testing
       - dependency-check
       - markdown-lint
+      - redis
+      - trivy
     steps:
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
@@ -294,6 +298,8 @@ jobs:
       - contract-testing
       - dependency-check
       - markdown-lint
+      - trivy
+      - redis
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET Core SDK 6
