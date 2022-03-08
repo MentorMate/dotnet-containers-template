@@ -341,7 +341,6 @@ jobs:
       - redis
       - snyk
       - sonar-cloud
-      - license-compliance
     steps:
       - name: Google Chat Notification
         run: |
