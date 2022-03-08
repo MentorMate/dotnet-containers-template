@@ -347,7 +347,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-            command: --help
+            command: test --help
             args: license-compliance
   notification:
     name: notification
