@@ -406,7 +406,7 @@ jobs:
       - name: ZAP Scan
         uses: zaproxy/action-full-scan@v0.3.0
         with:
-          target: 'https://${{ needs.deploy.outputs.fqdnApi }}'
+          target: 'https://${{ needs.deploy.outputs.fqdnWeb }}'
   functional-tests:
     name: functional tests
     runs-on: ubuntu-latest
