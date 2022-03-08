@@ -176,47 +176,47 @@ jobs:
         run: npx dredd arithmetic-api.contract-tests.yml http://localhost -l error
       - run: docker stop api-local-instance-for-contract-testing
       - run: docker rmi calc/arithmetics.api:local
-  dependency-check:
-    runs-on: ubuntu-latest
-    name: dependency check
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup .NET Core SDK 6
-        uses: actions/setup-dotnet@v1.8.0
-        with:
-          dotnet-version: '6.0.x'
-      - name: Build dotnet projects
-        run: dotnet build -c Debug src/Calculator.Services.ArithmeticOperations.Tests/Calculator.Services.ArithmeticOperations.Tests.csproj
-      - uses: dependency-check/Dependency-Check_Action@main
-        id: dependency-check
-        with:
-          project: 'template'
-          path: '**/bin/Debug/net5.0/**/*.dll'
-          format: 'JUNIT'
-          args: >
-            --scan "**/calculator-app/package*.json"
-            --junitFailOnCVSS 7
-      - name: upload check results
-        uses: actions/upload-artifact@v2
-        with:
-          name: dependency-check-results
-          path: ${{github.workspace}}/reports
-        if: ${{ always() }}
-  docker-metadata:
-    runs-on: ubuntu-latest
-    name: Extract Docker metadata
-    steps:
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.services.imageName }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=ref,event=branch
-            type=sha
+  # dependency-check:
+  #   runs-on: ubuntu-latest
+  #   name: dependency check
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Setup .NET Core SDK 6
+  #       uses: actions/setup-dotnet@v1.8.0
+  #       with:
+  #         dotnet-version: '6.0.x'
+  #     - name: Build dotnet projects
+  #       run: dotnet build -c Debug src/Calculator.Services.ArithmeticOperations.Tests/Calculator.Services.ArithmeticOperations.Tests.csproj
+  #     - uses: dependency-check/Dependency-Check_Action@main
+  #       id: dependency-check
+  #       with:
+  #         project: 'template'
+  #         path: '**/bin/Debug/net5.0/**/*.dll'
+  #         format: 'JUNIT'
+  #         args: >
+  #           --scan "**/calculator-app/package*.json"
+  #           --junitFailOnCVSS 7
+  #     - name: upload check results
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: dependency-check-results
+  #         path: ${{github.workspace}}/reports
+  #       if: ${{ always() }}
+  # docker-metadata:
+  #   runs-on: ubuntu-latest
+  #   name: Extract Docker metadata
+  #   steps:
+  #     - name: Extract Docker metadata
+  #       id: meta
+  #       uses: docker/metadata-action@v3
+  #       with:
+  #         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.services.imageName }}
+  #         tags: |
+  #           type=semver,pattern={{version}}
+  #           type=semver,pattern={{major}}.{{minor}}
+  #           type=semver,pattern={{major}}
+  #           type=ref,event=branch
+  #           type=sha
   sonar-cloud:
     name: sonar cloud analysis
     runs-on: ubuntu-latest
@@ -324,25 +324,6 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
             args: --all-projects
-  license-compliance:
-    name: license-compliance
-    runs-on: ubuntu-latest
-    needs:
-      - dotnet-build-test
-      - dotnet-format
-      - web-lint-test
-      - spell-check
-      - git-leaks
-      - editorconfig-check
-      - contract-testing
-      - dependency-check
-      - markdown-lint
-      - trivy
-      - redis
-    steps:
-      - uses: actions/checkout@master
-      - name: REUSE Compliance Check
-        uses: fsfe/reuse-action@v1
   notification:
     name: notification
     runs-on: ubuntu-latest
