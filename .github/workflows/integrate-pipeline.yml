@@ -168,7 +168,7 @@ jobs:
       - git-leaks
       - editorconfig-check
       - contract-testing
-      - dependency-check
+#      - dependency-check
       - markdown-lint
       - redis
     steps:
@@ -249,7 +249,7 @@ jobs:
       - git-leaks
       - editorconfig-check
       - contract-testing
-      - dependency-check
+#      - dependency-check
       - markdown-lint
       - redis
     steps:
@@ -273,7 +273,7 @@ jobs:
       - git-leaks
       - editorconfig-check
       - contract-testing
-      - dependency-check
+#      - dependency-check
       - markdown-lint
       - redis
     steps:
@@ -309,7 +309,7 @@ jobs:
       - git-leaks
       - editorconfig-check
       - contract-testing
-      - dependency-check
+#      - dependency-check
       - markdown-lint
       - redis
     runs-on: ubuntu-latest

@@ -228,7 +228,7 @@ jobs:
       - git-leaks
       - editorconfig-check
       - contract-testing
-      - dependency-check
+#      - dependency-check
       - markdown-lint
       - trivy
       - redis
@@ -311,7 +311,7 @@ jobs:
       - git-leaks
       - editorconfig-check
       - contract-testing
-      - dependency-check
+#      - dependency-check
       - markdown-lint
       - trivy
       - redis
@@ -335,7 +335,7 @@ jobs:
       - git-leaks
       - editorconfig-check
       - contract-testing
-      - dependency-check
+#      - dependency-check
       - markdown-lint
       - trivy
       - redis
