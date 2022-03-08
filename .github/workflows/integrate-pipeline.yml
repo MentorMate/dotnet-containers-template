@@ -468,7 +468,11 @@ jobs:
   notification:
     name: notification
     runs-on: ubuntu-latest
-    needs: [deploy]
+    needs:
+      - zap
+      - functional-tests
+      - artillery-tests
+      - lighthouse-tests
     steps:
       - name: Google Chat Notification
         run: |
