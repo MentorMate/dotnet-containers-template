@@ -323,7 +323,31 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-            args: license-compliance --all-projects
+            args: --all-projects
+  license-compliance:
+    name: license-compliance
+    runs-on: ubuntu-latest
+    needs:
+      - dotnet-build-test
+      - dotnet-format
+      - web-lint-test
+      - spell-check
+      - git-leaks
+      - editorconfig-check
+      - contract-testing
+      - dependency-check
+      - markdown-lint
+      - trivy
+      - redis
+    steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/dotnet@master
+        continue-on-error: true # To make sure that SARIF upload gets called
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+            args: license-compliance
   notification:
     name: notification
     runs-on: ubuntu-latest
