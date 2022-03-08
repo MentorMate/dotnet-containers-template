@@ -321,7 +321,7 @@ jobs:
         ]
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
+      IMAGE_NAME: ${{ lowercase(github.repository) }}
     permissions:
       packages: write
       contents: read
@@ -358,9 +358,9 @@ jobs:
       - name: Output image tag
         id: image-tag
         run: echo "::set-output name=image-${{ matrix.services.imageName }}::${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.services.imageName }}:sha-$(git rev-parse --short HEAD)" | tr '[:upper:]' '[:lower:]'
-      - run: docker images
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
+        continue-on-error: true
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.services.imageName }}:main
           format: 'table'
@@ -368,7 +368,6 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-      - run: docker images
   deploy:
     name: create or update environment
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
