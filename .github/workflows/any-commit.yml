@@ -323,8 +323,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-            args: --all-projects
-      - run: npm i snyk -g && snyk test license-compliance
+            args: test license-compliance --all-projects
   notification:
     name: notification
     runs-on: ubuntu-latest
