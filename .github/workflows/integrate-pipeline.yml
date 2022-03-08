@@ -321,7 +321,7 @@ jobs:
         ]
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ lowercase(github.repository) }}
+      IMAGE_NAME: ${{ github.repository }}
     permissions:
       packages: write
       contents: read
@@ -358,9 +358,9 @@ jobs:
       - name: Output image tag
         id: image-tag
         run: echo "::set-output name=image-${{ matrix.services.imageName }}::${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.services.imageName }}:sha-$(git rev-parse --short HEAD)" | tr '[:upper:]' '[:lower:]'
+      - run: echo ::set-env name=IMAGE_NAME::$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
-        continue-on-error: true
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.services.imageName }}:main
           format: 'table'
