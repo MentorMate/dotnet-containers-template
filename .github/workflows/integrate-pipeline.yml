@@ -406,6 +406,7 @@ jobs:
       - name: ZAP Scan
         uses: zaproxy/action-baseline@v0.6.1
         with:
+          allow_issue_writing: false
           target: 'https://${{ needs.deploy.outputs.fqdnWeb }}'
   functional-tests:
     name: functional tests
