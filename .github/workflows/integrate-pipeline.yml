@@ -445,13 +445,13 @@ jobs:
   artillery-tests:
     name: artillery load tests
     runs-on: ubuntu-latest
-    needs: [deploy]
-    container: artilleryio/artillery:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Execute load tests
-        run: /home/node/artillery/bin/artillery run --target https://${{ needs.deploy.outputs.fqdnApi }} arithmetic-api.load-tests.yml
+        uses: docker://artilleryio/artillery:latest
+        with:
+          args: run --target https://${{ needs.deploy.outputs.fqdnApi }} /github/workspace/arithmetic-api.load-tests.yml
   lighthouse-tests:
     name: lighthouse tests
     runs-on: ubuntu-latest
