@@ -267,7 +267,7 @@ jobs:
   #          args: --file=/github/workspace/Calculator.sln
   notification-predeploy:
     name: notification predeploy
-    if: ${{ github.ref != 'refs/heads/main' }}
+    if: ${{ always() && github.ref != 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [sonar-cloud]
     env:
@@ -507,7 +507,7 @@ jobs:
 
   notification:
     name: notification
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [create-tag]
     env:
