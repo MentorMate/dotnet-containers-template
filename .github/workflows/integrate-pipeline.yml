@@ -159,6 +159,8 @@ jobs:
   sonar-cloud:
     name: sonar cloud analysis
     runs-on: ubuntu-latest
+    outputs:
+      job-status: ${{ steps.stepid.outputs.job-status }}
     needs:
       - dotnet-build-test
       - dotnet-format
@@ -238,6 +240,9 @@ jobs:
            /d:sonar.junit.reportPaths="${{steps.download-dependency-results.outputs.download-path}}/dependency-check-junit.xml"
           dotnet build
           ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      - id: stepid
+        run: echo "::set-output name=job-status::Success"
+
   # snyk:
   #   runs-on: ubuntu-latest
   #   needs:
