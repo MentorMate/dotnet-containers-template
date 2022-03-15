@@ -260,8 +260,9 @@ jobs:
   #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
   #       with:
   #          args: --file=/github/workspace/Calculator.sln
-  notification-tests:
-    name: notification tests
+  notification-predeploy:
+    name: notification predeploy
+    if: ${{ github.ref != 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs:
       - dotnet-build-test
@@ -274,10 +275,14 @@ jobs:
       - dependency-check
       - markdown-lint
       - sonar-cloud
+    env:
+      RUN_URL: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
     steps:
       - name: Google Chat Notification
         run: |
-          curl -H 'Content-Type: application/json' -X POST -d '{"text": "TESTS_IS_OK"}' -s '${{ secrets.GOOGLE_CHAT_WEBHOOK }}&token=aacP7-Ah-kT9ZgdmI1ahr_phNJGI24_rS06ai-aK24g%3D'
+          if [[ "${{needs.sonar-cloud.outputs.job-status}}" == "Success" ]]; then msg='{"text":"PRE_DEPLOY_IS_OK ${{ env.RUN_URL }}"}'; else msg='{"text":"PRE_DEPLOY_IS_FAIL ${{ env.RUN_URL }}"}'; fi
+          echo $msg
+          curl -H 'Content-Type: application/json' -X POST -d "$msg" -s '${{ secrets.GOOGLE_CHAT_WEBHOOK }}&token=aacP7-Ah-kT9ZgdmI1ahr_phNJGI24_rS06ai-aK24g%3D'
   doc-fx:
     name: documentation wiki
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -484,8 +489,9 @@ jobs:
           budgetPath: ./lighthouse-budget.json # test performance budgets
           uploadArtifacts: true # save results as an action artifacts
           temporaryPublicStorage: true # upload lighthouse report to the temporary storage
-  notification:
-    name: notification
+
+  create-tag:
+    name: create new tag
     runs-on: ubuntu-latest
     needs:
       - zap
@@ -493,6 +499,23 @@ jobs:
       - artillery-tests
       - lighthouse-tests
     steps:
+      - uses: actions/checkout@v2
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  notification:
+    name: notification
+    runs-on: ubuntu-latest
+    needs: [create-tag]
+    if: ${{ always() }}
+    env:
+      RUN_URL: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+    steps:
       - name: Google Chat Notification
         run: |
-          curl -H 'Content-Type: application/json' -X POST -d '{"text": "DEPLOY_OK"}' -s '${{ secrets.GOOGLE_CHAT_WEBHOOK }}&token=aacP7-Ah-kT9ZgdmI1ahr_phNJGI24_rS06ai-aK24g%3D'
+          if [[ "${{needs.create-tag.outputs.job-status}}" == "Success" ]]; then msg='{"text":"DEPLOY_OK ${{ env.RUN_URL }}"}'; else msg='{"text":"DEPLOY_FAIL ${{ env.RUN_URL }}"}'; fi
+          echo $msg
+          curl -H 'Content-Type: application/json' -X POST -d "$msg" -s '${{ secrets.GOOGLE_CHAT_WEBHOOK }}&token=aacP7-Ah-kT9ZgdmI1ahr_phNJGI24_rS06ai-aK24g%3D'
