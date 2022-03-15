@@ -269,17 +269,8 @@ jobs:
     name: notification predeploy
     if: ${{ github.ref != 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    needs:
-      - dotnet-build-test
-      - dotnet-format
-      - web-lint-test
-      - spell-check
-      - git-leaks
-      - editorconfig-check
-      - contract-testing
-      - dependency-check
-      - markdown-lint
-      - sonar-cloud
+    needs: [sonar-cloud]
+    if: ${{ always() }}
     env:
       RUN_URL: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
     steps:
@@ -517,8 +508,10 @@ jobs:
 
   notification:
     name: notification
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [create-tag]
+    if: ${{ always() }}
     env:
       RUN_URL: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
     steps:
