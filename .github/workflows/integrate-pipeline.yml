@@ -270,7 +270,6 @@ jobs:
     if: ${{ github.ref != 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [sonar-cloud]
-    if: ${{ always() }}
     env:
       RUN_URL: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
     steps:
@@ -511,7 +510,6 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [create-tag]
-    if: ${{ always() }}
     env:
       RUN_URL: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
     steps:
