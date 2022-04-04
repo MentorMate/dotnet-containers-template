@@ -160,6 +160,9 @@ resource webApp 'Microsoft.Web/containerApps@2021-03-01' = {
             name: 'statestore'
             type: 'state.azure.blobstorage'
             version: 'v1'
+            scopes: [
+              'web'
+            ]
             metadata: [
               {
                 name: 'accountName'
