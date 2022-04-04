@@ -2,9 +2,13 @@ name: Build and Test
 
 on:
   push:
+    branches:
+      - main
+      - 'release/**'
+      - 'hotfix/**'
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [main, release-*]
+    branches: [main, release/**]
 
 jobs:
   dotnet-build-test:
@@ -229,7 +233,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./.sonar/scanner/dotnet-sonarscanner begin /k:"MentorMate_dotnet-containers-template" /o:mentormate \
+          ./.sonar/scanner/dotnet-sonarscanner begin /k:"mm-dotnet-containers-template-github" /o:mentormate \
            /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url=https://sonarcloud.io \
            /d:sonar.exclusions="**/node_modules/**/*,**/*.ttf,**/*.woff2,**/Scripts/**/*,**/bootstrap*.css" \
            /d:sonar.test.inclusions="src/Calculator.Services.ArithmeticOperations.Tests/**/*,**/*.test.ts,**/calculator-e2e/**/*" \
