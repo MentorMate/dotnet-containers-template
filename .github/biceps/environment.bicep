@@ -1,7 +1,7 @@
 param app_name string
 param location_name string
 
-resource law 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
+resource law 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' = {
   name: app_name
   location: location_name
   properties: any({
@@ -15,7 +15,7 @@ resource law 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
   })
 }
 
-resource env 'Microsoft.Web/kubeEnvironments@2021-02-01' = {
+resource env 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
   name: app_name
   location: location_name
   kind: 'containerenvironment'

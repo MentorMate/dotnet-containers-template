@@ -46,11 +46,11 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   }
 }
 
-resource apiApp 'Microsoft.Web/containerApps@2021-03-01' = {
+resource apiApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
   name: '${app_name}-api'
   location: rg.location
   properties: {
-    kubeEnvironmentId: containerAppEnvironmentId
+    managedEnvironmentId: containerAppEnvironmentId
     configuration: {
       ingress: {
         external: true
@@ -112,11 +112,11 @@ resource apiApp 'Microsoft.Web/containerApps@2021-03-01' = {
   }
 }
 
-resource webApp 'Microsoft.Web/containerApps@2021-03-01' = {
+resource webApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
   name: '${app_name}-web'
   location: rg.location
   properties: {
-    kubeEnvironmentId: containerAppEnvironmentId
+    managedEnvironmentId: containerAppEnvironmentId
     configuration: {
       ingress: {
         external: true
@@ -161,6 +161,9 @@ resource webApp 'Microsoft.Web/containerApps@2021-03-01' = {
             name: 'statestore'
             type: 'state.azure.blobstorage'
             version: 'v1'
+            scopes: [
+              'web'
+            ]
             metadata: [
               {
                 name: 'accountName'
