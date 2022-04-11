@@ -155,15 +155,11 @@ resource webApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
         enabled: true
         appPort: 80
         appId: 'web'
-        appProtocol: 'http'
         components: [
           {
             name: 'statestore'
             type: 'state.azure.blobstorage'
             version: 'v1'
-            scopes: [
-              'web'
-            ]
             metadata: [
               {
                 name: 'accountName'
