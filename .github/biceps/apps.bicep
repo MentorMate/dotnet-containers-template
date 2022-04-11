@@ -1,9 +1,10 @@
 param app_name string
-param sku_storage_name string = 'Standard_LRS'
 param storage_name string
 param apiImage string
 param webImage string
-param containerAppEnvironmentId string
+param sku_storage_name string = 'Standard_LRS'
+param logAnalyticsWorkspaceName string = 'logs-${app_name}'
+param appInsightsName string = 'insights-${app_name}'
 
 param registry string
 param registryUsername string
@@ -46,11 +47,77 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   }
 }
 
+resource law 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' = {
+  name: logAnalyticsWorkspaceName
+  location: rg.location
+  properties: any({
+    retentionInDays: 30
+    features: {
+      searchVersion: 1
+    }
+    sku: {
+      name: 'PerGB2018'
+    }
+  })
+}
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: appInsightsName
+  location: rg.location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: law.id
+  }
+}
+
+resource env 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
+  name: app_name
+  location: rg.location
+  properties: {
+    daprAIInstrumentationKey:appInsights.properties.InstrumentationKey
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: law.properties.customerId
+        sharedKey: law.listKeys().primarySharedKey
+      }
+    }
+  }
+  
+  resource daprComponent 'daprComponents@2022-01-01-preview' = {
+    name: 'statestore'
+    properties: {
+      componentType: 'state.azure.blobstorage'
+      version: 'v1'
+      ignoreErrors: true
+      initTimeout: '5s'
+      metadata: [
+        {
+          name: 'accountName'
+          value: storage.name
+        }
+        {
+          name: 'accountKey'
+          secretRef: 'storage-key'
+        }
+        {
+          name: 'containerName'
+          value: 'state'
+        }
+      ]
+      scopes:[
+        'web'
+      ]
+    }
+  }
+}
+
 resource apiApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
   name: '${app_name}-api'
   location: rg.location
   properties: {
-    managedEnvironmentId: containerAppEnvironmentId
+    managedEnvironmentId: env.id
     configuration: {
       ingress: {
         external: true
@@ -69,6 +136,11 @@ resource apiApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
           passwordSecretRef: 'container-registry-password'
         }
       ]
+      dapr: {
+        enabled: true
+        appPort: 80
+        appId: 'api'
+      }
     }
     template: {
       containers: [
@@ -103,11 +175,6 @@ resource apiApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
           }
         ]
       }
-      dapr: {
-        enabled: true
-        appPort: 80
-        appId: 'api'
-      }
     }
   }
 }
@@ -116,7 +183,7 @@ resource webApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
   name: '${app_name}-web'
   location: rg.location
   properties: {
-    managedEnvironmentId: containerAppEnvironmentId
+    managedEnvironmentId: env.id
     configuration: {
       ingress: {
         external: true
@@ -139,6 +206,11 @@ resource webApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
           passwordSecretRef: 'container-registry-password'
         }
       ]
+      dapr: {
+        enabled: true
+        appPort: 80
+        appId: 'web'
+      }
     }
     template: {
       containers: [
@@ -148,34 +220,8 @@ resource webApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
         }
       ]
       scale: {
-        minReplicas: 1
+        minReplicas: 0
         maxReplicas: 1
-      }
-      dapr: {
-        enabled: true
-        appPort: 80
-        appId: 'web'
-        components: [
-          {
-            name: 'statestore'
-            type: 'state.azure.blobstorage'
-            version: 'v1'
-            metadata: [
-              {
-                name: 'accountName'
-                value: storage.name
-              }
-              {
-                name: 'accountKey'
-                secretRef: 'storage-key'
-              }
-              {
-                name: 'containerName'
-                value: 'state'
-              }
-            ]
-          }
-        ]
       }
     }
   }

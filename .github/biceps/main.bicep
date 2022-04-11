@@ -1,7 +1,7 @@
 targetScope = 'subscription'
 
-param app_name string = 'calc-template'
-param storage_name string = 'calctemplatestorage'
+param app_name string = 'calc-template-dotnet-github'
+param storage_name string = 'CalcTemplateDotNetGitHub'
 param apiImage string
 param webImage string
 param registry string
@@ -16,22 +16,12 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: location_name
 }
 
-module containerAppEnvironment 'environment.bicep' = {
-  name: 'container-app-environment'
-  scope: rg
-  params: {
-    app_name: app_name
-    location_name: location_name
-  }
-}
-
-module appDeployPlan 'infra.bicep' = {
+module appDeployPlan 'apps.bicep' = {
   name: 'appDeploy'
   scope: rg
   params: {
     app_name: app_name
     storage_name: storage_name
-    containerAppEnvironmentId: containerAppEnvironment.outputs.envId
     apiImage: apiImage
     webImage: webImage
     registry: registry
