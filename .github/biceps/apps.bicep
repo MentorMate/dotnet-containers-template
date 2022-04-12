@@ -109,6 +109,12 @@ resource env 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
       scopes:[
         'web'
       ]
+      secrets: [
+        {
+          name: 'storage-key'
+          value: '${listKeys(storage.id, storage.apiVersion).keys[0].value}'
+        }
+      ]
     }
   }
 }
@@ -193,10 +199,6 @@ resource webApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
         {
           name: 'container-registry-password'
           value: registryPassword
-        }
-        {
-          name: 'storage-key'
-          value: '${listKeys(storage.id, storage.apiVersion).keys[0].value}'
         }
       ]
       registries: [
