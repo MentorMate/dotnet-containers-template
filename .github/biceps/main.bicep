@@ -1,7 +1,8 @@
+// cspell:ignore mmtemplatedotnetgithub
 targetScope = 'subscription'
 
 param app_name string = 'calc-template-dotnet-github'
-param storage_name string = 'CalcTemplateDotNetGitHub'
+param storage_name string = 'mmtemplatedotnetgithub'
 param apiImage string
 param webImage string
 param registry string
