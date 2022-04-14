@@ -407,10 +407,7 @@ jobs:
       job-status: ${{ steps.stepid.outputs.job-status }}
       tag-version: ${{ steps.tag_version.outputs.new_tag }}
     needs:
-      - zap
-      - functional-tests
-      - artillery-tests
-      - lighthouse-tests
+      - deploy-integration
     steps:
       - uses: actions/checkout@v2
       - name: Bump version and push tag
