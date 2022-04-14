@@ -2,7 +2,7 @@
 targetScope = 'subscription'
 
 param envName string = 'prod'
-param app_name string = 'calc-template-dotnet-github'
+param app_name string = 'mm-devops-dotnet-github'
 param storage_name string = 'mmtemplatedotnetgithub'
 param apiImage string
 param webImage string
