@@ -1,6 +1,6 @@
 param app_name string
-param env_name string
 param storage_name string
+param envName string
 param apiImage string
 param webImage string
 param sku_storage_name string = 'Standard_LRS'
@@ -121,7 +121,7 @@ resource env 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
 }
 
 resource apiApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
-  name: '${app_name}-api-${env_name}'
+  name: '${app_name}-api-${envName}'
   location: rg.location
   properties: {
     managedEnvironmentId: env.id
@@ -187,7 +187,7 @@ resource apiApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
 }
 
 resource webApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
-  name: '${app_name}-web-${env_name}'
+  name: '${app_name}-web-${envName}'
   location: rg.location
   properties: {
     managedEnvironmentId: env.id

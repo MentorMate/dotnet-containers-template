@@ -48,7 +48,7 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
           region: WestEurope
           template: ./.github/biceps/main.bicep
-          parameters: registry=ghcr.io containerRegistryUsername=${{ secrets.DOCKER_USER }} containerRegistryPassword=${{ secrets.DOCKER_PASS }} apiImage=${{ inputs.API_DOCKER_IMAGE }} webImage=${{ inputs.WEB_DOCKER_IMAGE }} env_name=${{ inputs.ENV_NAME }}
+          parameters: registry=ghcr.io containerRegistryUsername=${{ secrets.DOCKER_USER }} containerRegistryPassword=${{ secrets.DOCKER_PASS }} apiImage=${{ inputs.API_DOCKER_IMAGE }} webImage=${{ inputs.WEB_DOCKER_IMAGE }} envName=${{ inputs.ENV_NAME }}
           failOnStdErr: false
       - name: output variables
         id: vars
