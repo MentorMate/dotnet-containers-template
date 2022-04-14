@@ -277,7 +277,7 @@ jobs:
     steps:
       - uses: ./.github/workflows/notify-reusable-action
         with:
-          job-status: ${{needs.sonar-cloud.outputs.job-status}
+          job-status: ${{needs.sonar-cloud.outputs.job-status}}
         secrets:
           GOOGLE_WEBHOOK: ${{ secrets.GOOGLE_WEBHOOK }}
 
@@ -434,6 +434,6 @@ jobs:
     steps:
       - uses: ./.github/workflows/notify-reusable-action
         with:
-          job-status: ${{needs.create-tag.outputs.job-status}
+          job-status: ${{needs.create-tag.outputs.job-status}}
         secrets:
           GOOGLE_WEBHOOK: ${{ secrets.GOOGLE_WEBHOOK }}

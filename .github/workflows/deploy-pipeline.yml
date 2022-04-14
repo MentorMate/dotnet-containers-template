@@ -1,4 +1,4 @@
-name: Deploy (Manual; GitHub Environments)
+name: Deploy (Manual; Environments)
 
 on:
   push:
@@ -13,15 +13,14 @@ jobs:
   deploy-stage:
     name: Deploy Staging Environment
     if: github.event.inputs.deploy_env == 'stage'
-    runs-on: ubuntu-latest
     environment:
       name: staging
     steps:
       - uses: ./.github/workflows/deploy-reusable-action
         with:
           ENV_NAME: stage
-          WEB_DOCKER_IMAGE: ghcr.io/${{ github.repository }}/calc-web:sha-$(git rev-parse --short HEAD)
-          API_DOCKER_IMAGE: ghcr.io/${{ github.repository }}/calc-api:sha-$(git rev-parse --short HEAD)
+          WEB_DOCKER_IMAGE: 'ghcr.io/${{ github.repository }}/calc-web:sha-$(git rev-parse --short HEAD)'
+          API_DOCKER_IMAGE: 'ghcr.io/${{ github.repository }}/calc-api:sha-$(git rev-parse --short HEAD)'
         secrets:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
           AZURE_SUBSCRIPTION: ${{ secrets.AZURE_SUBSCRIPTION }}
