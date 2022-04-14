@@ -389,7 +389,6 @@ jobs:
           severity: 'CRITICAL,HIGH'
   deploy-integration:
     name: Deploy Integration Environment
-    runs-on: ubuntu-latest
     needs: [publish]
     uses: ./.github/workflows/deploy-reusable-action.yml
     with:
@@ -426,7 +425,6 @@ jobs:
     uses: ./.github/workflows/notify-reusable-action.yml
     name: notification
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
     needs: [create-tag]
     with:
       job-status: ${{needs.create-tag.outputs.job-status}}
