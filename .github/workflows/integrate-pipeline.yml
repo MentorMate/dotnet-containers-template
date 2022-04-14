@@ -272,7 +272,6 @@ jobs:
   #          args: --file=/github/workspace/Calculator.sln
   notification-pre-deploy:
     uses: ./.github/workflows/notify-reusable-action.yml
-    name: notification pre-deploy
     if: ${{ always() && github.ref != 'refs/heads/main' }}
     needs: [sonar-cloud]
     with:
@@ -282,7 +281,7 @@ jobs:
 
   doc-fx:
     name: documentation wiki
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ci')  }}
     runs-on: windows-2022
     needs:
       - dotnet-build-test
@@ -319,7 +318,7 @@ jobs:
           force_orphan: true
   publish:
     name: build and push docker
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ci')  }}
     needs:
       - dotnet-build-test
       - dotnet-format
@@ -388,7 +387,7 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
   deploy-integration:
-    name: Deploy Integration Environment
+    name: Integration
     needs: [publish]
     uses: ./.github/workflows/deploy-reusable-action.yml
     with:
@@ -420,8 +419,7 @@ jobs:
 
   notification:
     uses: ./.github/workflows/notify-reusable-action.yml
-    name: notification
-    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ always() && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ci') }}
     needs: [create-tag]
     with:
       job-status: ${{needs.create-tag.outputs.job-status}}

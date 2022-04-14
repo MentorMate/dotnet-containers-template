@@ -28,7 +28,7 @@ on:
 
 jobs:
   deploy:
-    name: create or update environment
+    name: terraform
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event.inputs.ENV_NAME }}
