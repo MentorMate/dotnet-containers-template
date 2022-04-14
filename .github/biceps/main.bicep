@@ -1,6 +1,7 @@
 // cspell:ignore mmtemplatedotnetgithub
 targetScope = 'subscription'
 
+param env_name string = 'prod'
 param app_name string = 'calc-template-dotnet-github'
 param storage_name string = 'mmtemplatedotnetgithub'
 param apiImage string
@@ -22,6 +23,7 @@ module appDeployPlan 'apps.bicep' = {
   scope: rg
   params: {
     app_name: app_name
+    env_name: env_name
     storage_name: storage_name
     apiImage: apiImage
     webImage: webImage

@@ -271,9 +271,10 @@ jobs:
   #       with:
   #          args: --file=/github/workspace/Calculator.sln
   notification-pre-deploy:
-    uses: ./.github/workflows/notify-reusable-action.yml
+    name: '>'
     if: ${{ always() && github.ref != 'refs/heads/main' }}
     needs: [sonar-cloud]
+    uses: ./.github/workflows/notify-reusable-action.yml
     with:
       job-status: ${{needs.sonar-cloud.outputs.job-status}}
     secrets:
@@ -418,9 +419,10 @@ jobs:
         run: echo "::set-output name=job-status::Success"
 
   notification:
-    uses: ./.github/workflows/notify-reusable-action.yml
+    name: '>'
     if: ${{ always() && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ci') }}
     needs: [create-tag]
+    uses: ./.github/workflows/notify-reusable-action.yml
     with:
       job-status: ${{needs.create-tag.outputs.job-status}}
     secrets:
