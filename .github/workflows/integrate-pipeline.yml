@@ -392,7 +392,7 @@ jobs:
     needs: [publish]
     uses: ./.github/workflows/deploy-reusable-action.yml
     with:
-      ENV_NAME: integration
+      ENV_NAME: int
       WEB_DOCKER_IMAGE: ${{ needs.publish.outputs.calcWebImage }}
       API_DOCKER_IMAGE: ${{ needs.publish.outputs.calcApiImage }}
     secrets:
