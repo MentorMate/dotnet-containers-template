@@ -1,0 +1,24 @@
+name: Reusable Notify Action
+
+on:
+  workflow_call:
+    inputs:
+      job-status:
+        required: true
+        type: string
+    secrets:
+      GOOGLE_WEBHOOK:
+        required: true
+
+jobs:
+  notification:
+    name: notification
+    runs-on: ubuntu-latest
+    env:
+      RUN_URL: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+    steps:
+      - name: Google Chat Notification
+        run: |
+          if [[ "${{github.event.inputs.job-status}}" == "Success" ]]; then msg='{"text":"DEPLOY_OK ${{ env.RUN_URL }}"}'; else msg='{"text":"DEPLOY_FAIL ${{ env.RUN_URL }}"}'; fi
+          echo $msg
+          curl -H 'Content-Type: application/json' -X POST -d "$msg" -s 'https://chat.googleapis.com/v1/spaces/${{ secrets.GOOGLE_WEBHOOK }}'

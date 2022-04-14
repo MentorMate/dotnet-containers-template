@@ -1,4 +1,5 @@
 param app_name string
+param env_name string
 param storage_name string
 param apiImage string
 param webImage string
@@ -120,7 +121,7 @@ resource env 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
 }
 
 resource apiApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
-  name: '${app_name}-api'
+  name: '${app_name}-api-${env_name}'
   location: rg.location
   properties: {
     managedEnvironmentId: env.id
@@ -186,7 +187,7 @@ resource apiApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
 }
 
 resource webApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
-  name: '${app_name}-web'
+  name: '${app_name}-web-${env_name}'
   location: rg.location
   properties: {
     managedEnvironmentId: env.id

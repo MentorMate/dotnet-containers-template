@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - ci
       - 'release/**'
       - 'hotfix/**'
   pull_request:
@@ -269,19 +270,17 @@ jobs:
   #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
   #       with:
   #          args: --file=/github/workspace/Calculator.sln
-  notification-predeploy:
-    name: notification predeploy
+  notification-pre-deploy:
+    name: notification pre-deploy
     if: ${{ always() && github.ref != 'refs/heads/main' }}
-    runs-on: ubuntu-latest
     needs: [sonar-cloud]
-    env:
-      RUN_URL: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
     steps:
-      - name: Google Chat Notification
-        run: |
-          if [[ "${{needs.sonar-cloud.outputs.job-status}}" == "Success" ]]; then msg='{"text":"PRE_DEPLOY_IS_OK ${{ env.RUN_URL }}"}'; else msg='{"text":"PRE_DEPLOY_IS_FAIL ${{ env.RUN_URL }}"}'; fi
-          echo $msg
-          curl -H 'Content-Type: application/json' -X POST -d "$msg" -s '${{ secrets.GOOGLE_CHAT_WEBHOOK }}&token=aacP7-Ah-kT9ZgdmI1ahr_phNJGI24_rS06ai-aK24g%3D'
+      - uses: ./.github/workflows/notify-reusable-action
+        with:
+          job-status: ${{needs.sonar-cloud.outputs.job-status}
+        secrets:
+          GOOGLE_WEBHOOK: ${{ secrets.GOOGLE_WEBHOOK }}
+
   doc-fx:
     name: documentation wiki
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -389,111 +388,29 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-  deploy:
-    name: create or update environment
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+  deploy-integration:
+    name: Deploy Integration Environment
     runs-on: ubuntu-latest
     needs: [publish]
-    outputs:
-      fqdnWeb: ${{ steps.vars.outputs.fqdnWeb }}
-      fqdnApi: ${{ steps.vars.outputs.fqdnApi }}
+    environment:
+      name: integration
     steps:
-      - uses: actions/checkout@main
-      - uses: azure/login@v1
+      - uses: ./.github/workflows/deploy-reusable-action
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: deploy
-        uses: azure/arm-deploy@v1
-        with:
-          deploymentName: container-app
-          scope: subscription
-          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-          region: WestEurope
-          template: ./.github/biceps/main.bicep
-          parameters: registry=ghcr.io containerRegistryUsername=${{ github.DOCKER_USER }} containerRegistryPassword=${{ secrets.DOCKER_TOKEN }} apiImage=${{ needs.publish.outputs.calcApiImage }} webImage=${{ needs.publish.outputs.calcWebImage }}
-          failOnStdErr: false
-      - name: output variables
-        id: vars
-        run: |
-          fqdnWeb=$(az deployment sub show --query properties.outputs.fqdnWeb.value -n container-app -o tsv)
-          fqdnApi=$(az deployment sub show --query properties.outputs.fqdnApi.value -n container-app -o tsv)
-          echo "::set-output name=fqdnWeb::$fqdnWeb"
-          echo "::set-output name=fqdnApi::$fqdnApi"
-  zap:
-    name: ZAP Scan
-    runs-on: ubuntu-latest
-    needs: [deploy]
-    steps:
-      - name: ZAP Scan
-        uses: zaproxy/action-baseline@v0.6.1
-        with:
-          allow_issue_writing: false
-          target: 'https://${{ needs.deploy.outputs.fqdnWeb }}'
-  functional-tests:
-    name: functional tests
-    runs-on: ubuntu-latest
-    needs: [deploy]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Cache Node Modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-tests-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-tests-${{ env.cache-name }}-
-            ${{ runner.os }}-tests-
-      - name: npm package install
-        run: npm ci --prefix ./src/Calculator.Web/calculator-e2e --cache ~/.npm --prefer-offline --no-audit --silent
-      - name: web lint
-        run: |
-          echo '{"ENV_URL":"https://${{ needs.deploy.outputs.fqdnWeb }}"}' > src/Calculator.Web/calculator-e2e/cypress.env.json
-          npm start --prefix ./src/Calculator.Web/calculator-e2e
-      - name: upload functional test video
-        uses: actions/upload-artifact@v2
-        with:
-          name: functional-test-video
-          path: src/Calculator.Web/calculator-e2e/cypress/videos
-        if: ${{ always() }}
-      - name: upload functional test screenshots
-        uses: actions/upload-artifact@v2
-        with:
-          name: functional-test-screenshots
-          path: src/Calculator.Web/calculator-e2e/cypress/screenshots
-        if: ${{ always() }}
-  artillery-tests:
-    name: artillery load tests
-    runs-on: ubuntu-latest
-    needs: [deploy]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Execute load tests
-        uses: docker://artilleryio/artillery:latest
-        with:
-          args: run --target https://${{ needs.deploy.outputs.fqdnApi }} /github/workspace/arithmetic-api.load-tests.yml
-  lighthouse-tests:
-    name: lighthouse tests
-    runs-on: ubuntu-latest
-    needs: [deploy]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Audit URLs using Lighthouse
-        uses: treosh/lighthouse-ci-action@v9
-        with:
-          urls: |
-            https://${{ needs.deploy.outputs.fqdnWeb }}
-          budgetPath: ./lighthouse-budget.json # test performance budgets
-          uploadArtifacts: true # save results as an action artifacts
-          temporaryPublicStorage: true # upload lighthouse report to the temporary storage
-
+          ENV_NAME: int
+          WEB_DOCKER_IMAGE: ghcr.io/${{ github.repository }}/calc-web:sha-$(git rev-parse --short HEAD)
+          API_DOCKER_IMAGE: ghcr.io/${{ github.repository }}/calc-api:sha-$(git rev-parse --short HEAD)
+        secrets:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          AZURE_SUBSCRIPTION: ${{ secrets.AZURE_SUBSCRIPTION }}
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASS: ${{ secrets.DOCKER_TOKEN }}
   create-tag:
     name: create new tag
     runs-on: ubuntu-latest
     outputs:
       job-status: ${{ steps.stepid.outputs.job-status }}
+      tag-version: ${{ steps.tag_version.outputs.new_tag }}
     needs:
       - zap
       - functional-tests
@@ -514,11 +431,9 @@ jobs:
     if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [create-tag]
-    env:
-      RUN_URL: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
     steps:
-      - name: Google Chat Notification
-        run: |
-          if [[ "${{needs.create-tag.outputs.job-status}}" == "Success" ]]; then msg='{"text":"DEPLOY_OK ${{ env.RUN_URL }}"}'; else msg='{"text":"DEPLOY_FAIL ${{ env.RUN_URL }}"}'; fi
-          echo $msg
-          curl -H 'Content-Type: application/json' -X POST -d "$msg" -s '${{ secrets.GOOGLE_CHAT_WEBHOOK }}&token=aacP7-Ah-kT9ZgdmI1ahr_phNJGI24_rS06ai-aK24g%3D'
+      - uses: ./.github/workflows/notify-reusable-action
+        with:
+          job-status: ${{needs.create-tag.outputs.job-status}
+        secrets:
+          GOOGLE_WEBHOOK: ${{ secrets.GOOGLE_WEBHOOK }}
