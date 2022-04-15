@@ -1,0 +1,129 @@
+name: Reusable Deploy Action
+
+on:
+  workflow_call:
+    inputs:
+      ENV_NAME:
+        required: true
+        type: string
+      WEB_DOCKER_IMAGE:
+        required: true
+        type: string
+      API_DOCKER_IMAGE:
+        required: true
+        type: string
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
+      AZURE_SUBSCRIPTION:
+        required: true
+      DOCKER_USER:
+        required: true
+      DOCKER_PASS:
+        required: true
+    outputs:
+      webPage:
+        description: "The deployed web page"
+        value: ${{ jobs.deploy.outputs.fqdnWeb }}
+
+jobs:
+  deploy:
+    name: terraform
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.ENV_NAME }}
+    outputs:
+      fqdnWeb: ${{ steps.vars.outputs.fqdnWeb }}
+      fqdnApi: ${{ steps.vars.outputs.fqdnApi }}
+    steps:
+      - uses: actions/checkout@main
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: deploy
+        uses: azure/arm-deploy@v1
+        with:
+          deploymentName: container-app
+          scope: subscription
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          region: WestEurope
+          template: ./.github/biceps/main.bicep
+          parameters: registry=ghcr.io containerRegistryUsername=${{ secrets.DOCKER_USER }} containerRegistryPassword=${{ secrets.DOCKER_PASS }} apiImage=${{ inputs.API_DOCKER_IMAGE }} webImage=${{ inputs.WEB_DOCKER_IMAGE }} envName=${{ inputs.ENV_NAME }}
+          failOnStdErr: false
+      - name: output variables
+        id: vars
+        run: |
+          fqdnWeb=$(az deployment sub show --query properties.outputs.fqdnWeb.value -n container-app -o tsv)
+          fqdnApi=$(az deployment sub show --query properties.outputs.fqdnApi.value -n container-app -o tsv)
+          echo "::set-output name=fqdnWeb::$fqdnWeb"
+          echo "::set-output name=fqdnApi::$fqdnApi"
+  zap:
+    name: ZAP Scan
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    steps:
+      - name: ZAP Scan
+        uses: zaproxy/action-baseline@v0.6.1
+        with:
+          allow_issue_writing: false
+          target: 'https://${{ needs.deploy.outputs.fqdnWeb }}'
+  functional-tests:
+    name: functional tests
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    env:
+      cache-name: cache-node-modules
+      e2e-directory: ./src/Calculator.Web/calculator-e2e
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache Node Modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-ui-tests-${{ env.cache-name }}-${{ hashFiles('**/calculator-e2e/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-ui-tests-${{ env.cache-name }}-
+            ${{ runner.os }}-ui-tests-
+      - name: npm package install
+        run: npm ci --prefix ${{ env.e2e-directory }} --cache ~/.npm --prefer-offline --no-audit --silent
+      - name: web lint
+        run: |
+          echo '{"ENV_URL":"https://${{ needs.deploy.outputs.fqdnWeb }}"}' > ${{ env.e2e-directory }}/cypress.env.json
+          npm start --prefix ${{ env.e2e-directory }}
+      - name: upload functional test video
+        uses: actions/upload-artifact@v2
+        with:
+          name: functional-test-video
+          path: ${{ env.e2e-directory }}/cypress/videos
+        if: ${{ always() }}
+      - name: upload functional test screenshots
+        uses: actions/upload-artifact@v2
+        with:
+          name: functional-test-screenshots
+          path: ${{ env.e2e-directory }}/cypress/screenshots
+        if: ${{ always() }}
+  artillery-tests:
+    name: artillery load tests
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Execute load tests
+        uses: docker://artilleryio/artillery:latest
+        with:
+          args: run --target https://${{ needs.deploy.outputs.fqdnApi }} /github/workspace/arithmetic-api.load-tests.yml
+  lighthouse-tests:
+    name: lighthouse tests
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Audit URLs using Lighthouse
+        uses: treosh/lighthouse-ci-action@v9
+        with:
+          urls: |
+            https://${{ needs.deploy.outputs.fqdnWeb }}
+          budgetPath: ./lighthouse-budget.json # test performance budgets
+          uploadArtifacts: true # save results as an action artifacts
+          temporaryPublicStorage: true # upload lighthouse report to the temporary storage

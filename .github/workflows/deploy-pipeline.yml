@@ -1,0 +1,24 @@
+name: Deploy (Manual; GitHub Environments)
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_env:
+        description: 'Deploy Environment'
+        required: true
+        default: 'stage'
+
+jobs:
+  deploy-stage:
+    name: Stage
+    if: github.event.inputs.deploy_env == 'stage'
+    uses: ./.github/workflows/deploy-reusable-action.yml
+    with:
+      ENV_NAME: stage
+      WEB_DOCKER_IMAGE: 'ghcr.io/${{ github.repository }}/calc-web:sha-$(git rev-parse --short HEAD)'
+      API_DOCKER_IMAGE: 'ghcr.io/${{ github.repository }}/calc-api:sha-$(git rev-parse --short HEAD)'
+    secrets:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      AZURE_SUBSCRIPTION: ${{ secrets.AZURE_SUBSCRIPTION }}
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_PASS: ${{ secrets.DOCKER_TOKEN }}
