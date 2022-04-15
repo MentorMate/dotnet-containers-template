@@ -1,0 +1,221 @@
+{
+  "homepages": [],
+  "source_base_path": "D:/a/dotnet-containers-template/dotnet-containers-template/.docs",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      },
+      "is_incremental": false
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Arithmetic.Operations.Controllers.HomeController.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Arithmetic.Operations.Controllers.HomeController.html",
+          "hash": "leqb7omLUsNESuOHA6iu9UnS7nRVGo8vl1adHPGathM="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Arithmetic.Operations.Controllers.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Arithmetic.Operations.Controllers.html",
+          "hash": "HONepSiYRIMUbN6aJIb8bnON5raDMp4pHlZ8h8Z+eFE="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Arithmetic.Operations.Operands.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Arithmetic.Operations.Operands.html",
+          "hash": "m9jwmbnLGylXi+VqIxLuMDm1Q3W501uwnbz4NzY8DzY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Arithmetic.Operations.ProgramExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Arithmetic.Operations.ProgramExtensions.html",
+          "hash": "n5CnruGlrbv+WUEtrukVwZQzuu9b5GklsYIQ4peer3E="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Arithmetic.Operations.Result.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Arithmetic.Operations.Result.html",
+          "hash": "zyCKIw0gcF9tZaqGIkQe5G6isPxC5XY1wYyLyud59h8="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Arithmetic.Operations.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Arithmetic.Operations.html",
+          "hash": "2oj3b+2MpH2HQ3lac/sX++e67XuNfJF3cndd3s99Vw4="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "api/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "api/index.html",
+          "hash": "881m7IyyOBt8lJXMyu0rSoWkIah/uM+USp8IkH/7XEM="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html",
+          "hash": "447u4M3KxpQFlWRiVXocuYHgoFiijSFa0+XIZIWCp2Y="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/intro.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/intro.html",
+          "hash": "ZTH+mbjc4xoeaMmFDwlEvhPV3TfYZ1E1riXUwHy+6fA="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/local_deploy.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/local_deploy.html",
+          "hash": "02F7K/A/FravEMx+WzNCRhuFxSVmYS38NHXr0VZR9WY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "articles/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "articles/toc.html",
+          "hash": "FYyuPIzxDvoNobG+sjF/c3D11x3yPQsdRi3JXdF1dmI="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html",
+          "hash": "kLQaplet4p9L+DrQXuuEiFGbo98LQiWSdQr44DOnHT4="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html",
+          "hash": "WSuRrYiGwKKMbtdG9z8W9fXmLoCyTnGg9AxbPKLXm2Y="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    }
+  ],
+  "incremental_info": [
+    {
+      "status": {
+        "can_incremental": false,
+        "details": "Cannot build incrementally because last build info is missing.",
+        "incrementalPhase": "build",
+        "total_file_count": 0,
+        "skipped_file_count": 0,
+        "full_build_reason_code": "NoAvailableBuildCache"
+      },
+      "processors": {
+        "ConceptualDocumentProcessor": {
+          "can_incremental": false,
+          "incrementalPhase": "build",
+          "total_file_count": 4,
+          "skipped_file_count": 0
+        },
+        "ManagedReferenceDocumentProcessor": {
+          "can_incremental": false,
+          "incrementalPhase": "build",
+          "total_file_count": 6,
+          "skipped_file_count": 0
+        },
+        "TocDocumentProcessor": {
+          "can_incremental": false,
+          "details": "Processor TocDocumentProcessor cannot support incremental build because the processor doesn't implement ISupportIncrementalDocumentProcessor interface.",
+          "incrementalPhase": "build",
+          "total_file_count": 0,
+          "skipped_file_count": 0
+        }
+      }
+    },
+    {
+      "status": {
+        "can_incremental": false,
+        "details": "Cannot support incremental post processing, the reason is: should not trace intermediate info.",
+        "incrementalPhase": "postProcessing",
+        "total_file_count": 0,
+        "skipped_file_count": 0
+      },
+      "processors": {}
+    }
+  ],
+  "version_info": {},
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}
