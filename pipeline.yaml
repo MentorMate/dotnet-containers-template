@@ -1,0 +1,402 @@
+trigger:
+  - master
+
+pool:
+  name: 'Azure Pipelines'
+  vmImage: 'ubuntu-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  dockerfilePathApi: './Calculator.Services.ArithmeticOperations/Dockerfile'
+  dockerfilePathWeb: './Calculator.Web/Dockerfile'
+  imageRepositoryApi: 'api'
+  imageRepositoryWeb: 'web'
+  registry: 'mentormatedevopstemplates.azurecr.io'
+
+
+stages:
+- stage: build
+  displayName: 'Build'
+  jobs:
+  - job: build
+    displayName: 'Build test'
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build'
+    - script: |
+        dotnet test --no-restore -c Debug -l:"trx;LogFileName=../../../TestResults/arithmetic-operations.unit-tests.trx" src/Calculator.Services.ArithmeticOperations.Tests/Calculator.Services.ArithmeticOperations.Tests.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput="../../TestResults/"
+
+    - publish: 'TestResults'
+      displayName: 'Publish Artifact: TestResults'
+      artifact: DotNetTestResults
+
+  - job: dotnet_lint
+    displayName: 'dotnet lint'
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'
+
+    - task: DotNetCoreCLI@2
+    - script: 'dotnet format whitespace --verify-no-changes'
+      displayName: 'dotnet format whitespace'
+
+    - task: DotNetCoreCLI@2
+    - script: 'dotnet format style --verify-no-changes'
+      displayName: 'dotnet format style '
+
+  - job: web_lint
+    displayName: 'Web lint'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '12.x'
+    - script: |
+        npm ci --prefix ./src/Calculator.Web/calculator-app --cache ~/.npm --prefer-offline --no-audit --silent
+      displayName: "npm package install"
+    - script: |
+        npm run lint --prefix ./src/Calculator.Web/calculator-app
+      displayName: "web lint"
+    - script: |
+        npm run test --prefix ./src/Calculator.Web/calculator-app
+        ls -l
+      displayName: "web tests"
+    - publish: 'TestResults'
+      displayName: 'Publish Artifact: TestResults'
+      artifact: WebLintTestResults
+  - job: spell_check
+    displayName: 'Spell Check'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '12.x'
+    - script: |
+        npx cspell --no-progress "**/src/*"
+      displayName: "Spell Check"
+
+  - job: markdown_lint
+    displayName: 'markdown lint'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '12.x'
+    - script: |
+        npx markdownlint-cli **/*.md --ignore **/node_modules/**
+      displayName: "markdown lint"
+
+  - job: editorconfig_check
+    displayName: '.editorconfig check'
+    steps:
+    - script: |
+        docker run --rm --volume=$PWD:/check mstruebing/editorconfig-checker
+      displayName: ".editorconfig check"
+
+  - job: secrets_detection
+    displayName: 'secrets detection'
+    steps:
+    - script: |
+        docker run --rm --volume=$PWD:/mnt zricethezav/gitleaks:v8.6.1  detect --source="/mnt"
+      displayName: "secrets detection"
+
+  - job: contract_testing
+    displayName: 'contract testing'
+    steps:
+    - script: |
+        docker build --no-cache -t calc/arithmetics.api:local -f src/Calculator.Services.ArithmeticOperations/Dockerfile src/
+        docker run -d -p "80:80" --rm --name=api-local-instance-for-contract-testing calc/arithmetics.api:local
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '12.x'
+    - script: |
+        npx dredd arithmetic-api.contract-tests.yml http://localhost -l error
+        docker stop api-local-instance-for-contract-testing
+        docker rmi calc/arithmetics.api:local
+      displayName: "Contract tests"
+
+  - job: dependency_check
+    displayName: 'dependency check'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '12.x'
+    - script: |
+        npm ci --prefix ./src/Calculator.Web/calculator-app --cache ~/.npm --prefer-offline --no-audit --silent
+      displayName: "npm package install"
+
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'
+
+    - task: DotNetCoreCLI@2
+    - script: 'dotnet build -c Debug src/Calculator.Services.ArithmeticOperations.Tests/Calculator.Services.ArithmeticOperations.Tests.csproj'
+      displayName: 'Build dotnet projects'
+    - script: |
+        mkdir $PWD/report
+        chmod 777 $PWD/report
+        docker run --rm --volume $PWD:/src --volume $PWD/report:/report  owasp/dependency-check:latest --scan /src/**/bin/Debug/net6.0/**/*.dll --scan "/src/**/calculator-app/package*.json" --format "JUNIT" --project "template" --junitFailOnCVSS 7 --out /report
+
+    - publish: 'report'
+      displayName: 'Publish Artifact: TestResults'
+      artifact: DependencyCheckResults
+
+- stage: sonar_cloud
+  displayName: "Sonar Cloud"
+  dependsOn: build
+  jobs:
+  - job: SonarCloud
+    displayName: "Job Sonar Cloud"
+    variables:
+    - group: my-variable-group
+    steps:
+    - download: current
+      artifact: DotNetTestResults
+    - download: current
+      artifact: WebLintTestResults
+    - download: current
+      artifact: DependencyCheckResults
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'
+    # - task: AzureKeyVault@1
+    #   inputs:
+    #     azureSubscription: 'repo-kv-demo'                    ## YOUR_SERVICE_CONNECTION_NAME
+    #     KeyVaultName: 'kv-demo-repo'                         ## YOUR_KEY_VAULT_NAME
+    #     SecretsFilter: 'secretDemo'                          ## YOUR_SECRET_NAME. Default value: *
+    #     RunAsPreJob: false
+
+    - script: |
+          mkdir -p ./.sonar/scanner
+          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+          ./.sonar/scanner/dotnet-sonarscanner begin /k:"MentorMate_dotnet-containers-template" /o:mentormate \
+           /d:sonar.login="$(SONARKEYS)" /d:sonar.host.url=https://sonarcloud.io \
+           /d:sonar.exclusions="**/node_modules/**/*,**/*.ttf,**/*.woff2,**/Scripts/**/*,**/bootstrap*.css" \
+           /d:sonar.test.inclusions="src/Calculator.Services.ArithmeticOperations.Tests/**/*,**/*.test.ts,**/calculator-e2e/**/*" \
+           /d:sonar.cs.opencover.reportsPaths="$(Pipeline.Workspace)/DotNetTestResults/coverage.opencover.xml" \
+           /d:sonar.cs.vstest.reportsPaths="$(Pipeline.Workspace)/DotNetTestResults/arithmetic-operations.unit-tests.trx" \
+           /d:sonar.testExecutionReportPaths="$(Pipeline.Workspace)/WebLintTestResults/test-report.xml" \
+           /d:sonar.javascript.lcov.reportPaths="$(Pipeline.Workspace)/WebLintTestResults/lcov.info" \
+           /d:sonar.junit.reportPaths="$(Pipeline.Workspace)/DependencyCheckResults/dependency-check-junit.xml"
+          dotnet build
+          ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.login="$(SONARKEYS)"
+      displayName: "SonarCloud scanner"
+
+  - job: notification_predeploy_ok
+    dependsOn: SonarCloud
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+    displayName: 'notification predeploy'
+    variables:
+    - group: my-variable-group
+    steps:
+    - script: |
+        msg='{"text":"PRE_DEPLOY_IN_AZURE_DEVOPS_IS_OK"}'
+        echo $msg
+        curl -H 'Content-Type: application/json' -X POST -d "$msg" -s '$(CHATS)'
+  - job: notification_predeploy_fail
+    dependsOn: SonarCloud
+    condition: and(failed(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+    displayName: 'notification predeploy'
+    variables:
+    - group: my-variable-group
+    steps:
+    - script: |
+        msg='{"text":"PRE_DEPLOY_IN_AZURE_DEVOPS_IS_FAIL "}'
+        echo $msg
+        curl -H 'Content-Type: application/json' -X POST -d "$msg" -s '$(CHATS)'
+
+- stage: BuildPush
+  displayName: 'Build and Push'
+  dependsOn: build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - job: Bi
+    steps:
+    - bash: |
+        short_hash=`git rev-parse --short=7 HEAD`
+        echo ""
+        echo "Full git hash:  $(Build.SourceVersion)"
+        echo "Short git hash: $short_hash"
+        echo ""
+        ## Fail step if full hash does not start with short hash
+        if [[ $(Build.SourceVersion) != $short_hash* ]]; then
+          echo "--> Hashes do not match! Aborting."
+          exit 1
+        fi
+        echo "--> Hashes match. Storing short hash for subsequent steps."
+        ## Store variable for subsequent steps
+        echo "##vso[task.setvariable variable=short_hash]$short_hash"
+      workingDirectory: $(Build.SourcesDirectory)
+      displayName: Get short git hash
+      name: echovar
+    - script: |
+         echo "##vso[task.setvariable variable=webApi1]test"
+         docker build . -t $(imageRepositoryApi):latest -t $(imageRepositoryApi):sha-$(short_hash) -f $(dockerfilePathApi)
+         docker build . -t $(imageRepositoryWeb):latest -t $(imageRepositoryWeb):sha-$(short_hash) -f $(dockerfilePathApi)
+         echo $(ACR_PASS) | docker login -u '$(ACR_USER)' --password-stdin $(registry)
+         docker push $(registry)/$(imageRepositoryApi):latest
+         docker push $(registry)/$(imageRepositoryWeb):latest
+         sudo docker run --rm -v ~/.docker/:/root/.docker/ aquasec/trivy i $(registry)/$(imageRepositoryApi):latest
+         sudo docker run --rm -v ~/.docker/:/root/.docker/ aquasec/trivy i $(registry)/$(imageRepositoryWeb):latest
+
+- stage: deploy
+  displayName: 'Deploy'
+  dependsOn: BuildPush
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - job: job_deploy
+    steps:
+    - task: DownloadSecureFile@1
+      name: key
+      displayName: 'Deploy'
+      inputs:
+        secureFile: 'azure_credentials.json'
+    - task: PowerShell@2
+      name: deployandvar
+      inputs:
+        targetType: 'inline'
+        script: |
+          $creds = Get-Content $(key.secureFilePath) | ConvertFrom-Json
+          az login --service-principal -u $creds.clientId -p $creds.clientSecret -t $creds.tenantId
+          Write-Host "Registry $(registry)"
+          Write-Host "Api Image $(registry)/$(imageRepositoryApi):latest"
+          Write-Host "T $(ACR_USER)/$(ACR_PASS)"
+          az deployment sub create `
+            --name container-app-azure-devops `
+            --location WestEurope `
+            --template-file biceps/main.bicep `
+            --parameters `
+                registry="$(registry)" `
+                containerRegistryUsername=$(ACR_USER) containerRegistryPassword=$(ACR_PASS) `
+                apiImage=$(registry)/$(imageRepositoryApi):latest `
+                webImage=$(registry)/$(imageRepositoryWeb):latest
+          az deployment sub show --query properties.outputs.fqdnWeb.value -n container-app-azure-devops -o tsv
+          $fqdnWeb=$(az deployment sub show --query properties.outputs.fqdnWeb.value -n container-app -o tsv) #we need to use container-app-azure-devops i use container-app someting is wrong with azure-devops-deployment
+          $fqdnApi=$(az deployment sub show --query properties.outputs.fqdnApi.value -n container-app -o tsv) #we need to use container-app-azure-devops i use container-app someting is wrong with azure-devops-deployment
+          echo $fqdnWeb
+          Write-Host "##vso[task.setvariable variable=webUrl;isOutput=true]$fqdnWeb"
+          Write-Host "##vso[task.setvariable variable=webApi;isOutput=true]$fqdnApi"
+
+- stage: Tests
+  displayName: 'Tests'
+  dependsOn: deploy
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  variables:
+    urlweb: $[ stageDependencies.deploy.job_deploy.outputs['deployandvar.webUrl'] ]
+    urlapi: $[ stageDependencies.deploy.job_deploy.outputs['deployandvar.webApi'] ]
+  jobs:
+  - job: ZAP_scan
+    displayName: 'Zap scan'
+    steps:
+    - script: |
+          echo $(urlweb)
+          mkdir test
+          chmod 777 "/home/vsts/work/1/s/test"
+          docker run --rm -v /home/vsts/work/1/s/test:/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t  https://$(urlweb) -g gen.conf -r testreport.html -I
+    - publish: 'test'
+      displayName: 'Publish Artifact: TestResults'
+      artifact: ZAPResults
+
+  # - job: functional_tests
+  #   displayName: 'functional tests'
+  #   steps:
+  #   - task: NodeTool@0
+  #     inputs:
+  #       versionSpec: '12.x'
+  #   - script: |
+  #       echo "url"
+  #       echo $(url)
+  #       npm ci --prefix ./src/Calculator.Web/calculator-e2e --cache ~/.npm --prefer-offline --no-audit --silent
+  #     displayName: "npm package install"
+  #   - script: |
+  #       echo '{"ENV_URL":"https://$(urlweb)"}' > ./src/Calculator.Web/calculator-e2e/cypress.env.json
+  #       npm start --prefix ./src/Calculator.Web/calculator-e2e
+  #     displayName: "web lint"
+  #
+  #   - publish: './src/Calculator.Web/calculator-e2e/cypress/videos'
+  #     displayName: 'functional-test-video'
+  #     artifact: FunctionalTestVideo
+  #   - publish: './src/Calculator.Web/calculator-e2e/cypress/screenshots'
+  #     displayName: 'functional-test-screenshots'
+  #     artifact: FunctionalScreenshots
+
+  - job: artillery_tests
+    displayName: 'artillery tests'
+    variables:
+    - group: my-variable-group
+    steps:
+    - script: |
+        docker run --rm -v $(pwd):/mnt:rw -t artilleryio/artillery:latest run --target https://$(urlweb) /mnt/arithmetic-api.load-tests.yml
+
+  - job: lighthouse_tests
+    displayName: 'lighthouse tests'
+    variables:
+    - group: my-variable-group
+    steps:
+    - script: |
+        mkdir TestResults
+        chmod 777 TestResults
+        docker run --rm -v $(pwd):/app -v $(pwd)/TestResults:/report kanti/lighthouse-ci lighthouse-ci https://$(urlweb) --budget-path=lighthouse-budget.json --report=/report
+
+    - publish: 'TestResults'
+      displayName: 'Publish Artifact: TestResults'
+      artifact: LighthouseTests
+
+  - job: notification_predeploy_ok
+    dependsOn: lighthouse_tests
+    condition: succeeded()
+    displayName: 'notification predeploy'
+    variables:
+    - group: my-variable-group
+    steps:
+    - script: |
+        msg='{"text":"DEPLOY_IN_AZURE_DEVOPS_IS_OK"}'
+        echo $msg
+        curl -H 'Content-Type: application/json' -X POST -d "$msg" -s '$(CHATS)'
+  - job: notification_predeploy_fail
+    dependsOn: lighthouse_tests
+    condition: failed()
+    displayName: 'notification predeploy'
+    variables:
+    - group: my-variable-group
+    steps:
+    - script: |
+        msg='{"text":"DEPLOY_IN_AZURE_DEVOPS_IS_FAIL "}'
+        echo $msg
+        curl -H 'Content-Type: application/json' -X POST -d "$msg" -s '$(CHATS)'
+
+
+# - stage: WikiDocs
+#   displayName: 'documentation wiki'
+#   dependsOn: Tests
+#   jobs:
+#   - job: documentation_wiki
+#     pool:
+#       vmImage: 'windows-latest'
+#     steps:
+#     - task: UseDotNet@2
+#       inputs:
+#         packageType: 'sdk'
+#         version: '6.0.x'
+#     - script: |
+#            Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+#            choco install docfx
+#     - task: DotNetCoreCLI@2
+#     - script: 'dotnet restore'
+#       displayName: 'Install dependencies'
+#     - script: |
+#          docfx metadata .docs/docfx.json
+#          docfx .docs/docfx.json
+#          # git config --global user.email "yourname@email.com"
+#          # git config --global user.name "yourname"
+#          # git checkout docfx
+#          # git add .
+#          # git push orgine docfx
